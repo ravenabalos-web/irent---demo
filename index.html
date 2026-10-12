@@ -9,11 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
-/* Layout: app-style pages (white nav bar + light grey ground + white cards); camera uses black bars around a live view */
+/* Layout: app-style pages (white nav bar + light grey ground + white cards); camera uses black bars around a live view with a fixed aiming frame */
 :root{
   --red:#d7000f;         /* primary action, brand red */
   --red-soft:#fdecee;
-  --ground:#f4f5f7;      /* page background behind cards */
+  --go:#18c964;          /* aligned / ready state on the camera */
+  --ground:#f4f5f7;
   --card:#ffffff;
   --ink:#1f2328;
   --sub:#6b7480;
@@ -30,16 +31,14 @@
 html,body{height:100%;margin:0}
 body{background:var(--ground);color:var(--ink);font:15px/1.55 var(--font);-webkit-tap-highlight-color:transparent;overflow:hidden}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 [hidden]{display:none!important}
 .screen{position:fixed;inset:0;display:flex;flex-direction:column}
 
 /* ---------- shared app chrome ---------- */
 .nav{position:relative;background:var(--card);padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;flex:none}
 .nav h1{margin:0;font-size:16px;font-weight:600;text-align:center}
-.nav .back{width:40px;height:32px;display:grid;place-items:start center;place-items:center}
-.nav .back svg{width:20px;height:20px}
-.nav .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--red);transition:width .3s}
+.nav .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--red)}
 .nav .track{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line)}
 .page{flex:1;overflow:auto;padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:16px}
 .btn-red{background:var(--red);color:#fff;font-weight:600;font-size:16px;padding:13px;border-radius:999px;width:100%}
@@ -47,10 +46,8 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .btn-text{color:var(--sub);font-size:15px;padding:8px;justify-self:center}
 .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 1px 3px #1f232810}
 .em{color:var(--red)}
-.pill-tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:4px;background:var(--red);color:#fff}
 
 /* ---------- start ---------- */
-#start .page{align-items:stretch}
 .hero{text-align:center;display:grid;gap:8px;padding-top:4px}
 .hero h2{margin:0;font-size:20px;font-weight:700;text-wrap:balance}
 .hero p{margin:0;color:var(--sub);font-size:14px}
@@ -65,9 +62,14 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .seg{display:flex;background:var(--field);border-radius:999px;padding:3px;gap:2px}
 .seg button{padding:6px 16px;border-radius:999px;color:var(--sub);font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--red);font-weight:600;box-shadow:0 1px 3px #1f232820}
-.switch{appearance:none;width:46px;height:28px;border-radius:999px;background:var(--disabled);position:relative;margin:0;cursor:pointer;transition:background .2s}
+.switch{appearance:none;width:46px;height:28px;border-radius:999px;background:var(--disabled);position:relative;margin:0;cursor:pointer;transition:background .2s;flex:none}
 .switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform .2s}
 .switch:checked{background:var(--red)} .switch:checked::after{transform:translateX(18px)}
+.order{border:1px dashed #c4cbd3;background:#fafbfc}
+.order .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--sub);background:var(--field);border-radius:4px;padding:1px 6px;margin-bottom:8px}
+.order label{display:block;font-size:14px;margin-bottom:6px}
+.order input{width:100%;font:600 18px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.order p{margin:6px 0 0;font-size:12px;color:var(--hint)}
 .start-foot{margin-top:auto;display:grid;gap:6px}
 #startMsg{min-height:1.4em;color:var(--red);font-size:14px;text-align:center}
 .fine{font-size:12px;color:var(--hint);text-align:center;margin:0}
@@ -88,11 +90,17 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .chips{position:absolute;left:10px;right:10px;top:10px;display:flex;flex-wrap:wrap;gap:5px}
 .chip{font-size:11.5px;padding:3px 8px;border-radius:999px;background:#000000a0;color:#c9ced4;display:flex;gap:5px;align-items:center}
 .chip i{width:7px;height:7px;border-radius:50%;background:#ff4d57;display:block}
-.chip.on{color:#fff} .chip.on i{background:#3ddc84}
+.chip.on{color:#fff} .chip.on i{background:var(--go)}
 .chip.skip i{background:#8a929b}
-#instr{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);text-align:center;font-size:18px;font-weight:600;line-height:1.35;padding:9px 18px;border-radius:12px;background:#000000b8;text-wrap:balance;transition:background .2s}
-#instr.ready{background:var(--red)}
-.plate{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-size:13px;padding:4px 14px;border-radius:999px;background:#00000099;white-space:nowrap}
+.notice{position:absolute;left:10px;right:10px;top:66px;font-size:12px;line-height:1.4;padding:6px 10px;border-radius:8px;background:#f0a000e6;color:#1f2328}
+.dist{position:absolute;left:50%;transform:translateX(-50%);bottom:106px;width:min(78%,320px);display:grid;gap:3px}
+.dist .track{position:relative;height:8px;border-radius:999px;background:#ffffff40}
+.dist .zone{position:absolute;top:0;bottom:0;background:#18c96499;border-radius:999px}
+.dist .dot{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px #0006;transition:left .15s}
+.dist .lbl{display:flex;justify-content:space-between;font-size:11px;color:#e6e9ed;text-shadow:0 1px 2px #000}
+#instr{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);text-align:center;font-size:18px;font-weight:600;line-height:1.35;padding:9px 18px;border-radius:12px;background:#000000b8;text-wrap:balance;transition:background .2s}
+#instr.ready{background:var(--go)}
+.plate{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:13px;padding:4px 14px;border-radius:999px;background:#00000099;white-space:nowrap}
 .strip{flex:none;display:flex;gap:8px;padding:12px 14px 6px;overflow-x:auto}
 .tile{position:relative;width:62px;height:62px;flex:none;border-radius:6px;overflow:hidden;background:#2a2d31;border:2px solid transparent;display:grid;place-items:center}
 .tile.cur{border-color:#fff}
@@ -103,13 +111,13 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .cam-ctl{flex:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 20px calc(env(safe-area-inset-bottom,0px) + 16px)}
 .auto-note{font-size:12px;color:#c9ced4;line-height:1.35}
 .auto-note b{display:flex;gap:6px;align-items:center;color:#fff;font-size:13px}
-.auto-note b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px #d7000f55}
+.auto-note b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--go);box-shadow:0 0 0 3px #18c96455}
 .shutter{width:66px;height:66px;border-radius:50%;border:4px solid #fff;display:grid;place-items:center}
 .shutter span{width:52px;height:52px;border-radius:50%;background:#fff}
+.shutter:disabled{opacity:.4}
 .shutter-lbl{text-align:center;font-size:11px;color:#c9ced4;margin-top:3px}
 
-/* settings sheet over the camera */
-#settings{position:absolute;left:10px;right:10px;top:10px;background:var(--card);color:var(--ink);border-radius:14px;padding:14px;display:grid;gap:12px;z-index:5;box-shadow:0 8px 24px #0006}
+#settings{position:absolute;left:10px;right:10px;top:10px;max-height:calc(100% - 20px);overflow:auto;background:var(--card);color:var(--ink);border-radius:14px;padding:14px;display:grid;gap:12px;z-index:5;box-shadow:0 8px 24px #0006}
 #settings h3{margin:0;font-size:15px;display:flex;justify-content:space-between}
 #settings h3 button{color:var(--red);font-size:14px;font-weight:600}
 .slider{display:grid;gap:2px}
@@ -125,14 +133,18 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .sheet{flex:none;background:var(--card);color:var(--ink);border-radius:16px 16px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;gap:12px}
 .sheet .head{display:flex;justify-content:space-between;align-items:center}
 .sheet .head b{font-size:17px}
-.light{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:3px 10px;border-radius:999px}
+.light{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .light i{width:8px;height:8px;border-radius:50%;display:block}
 .light.green{color:var(--ok);background:#e7f6ee} .light.green i{background:var(--ok)}
 .light.yellow{color:#b37700;background:#fff4dc} .light.yellow i{background:var(--warn)}
 .light.red{color:var(--bad);background:var(--red-soft)} .light.red i{background:var(--bad)}
-.ai{background:var(--field);border-radius:10px;padding:10px 12px;display:grid;gap:2px}
+.light.wait{color:var(--sub);background:var(--field)} .light.wait i{background:var(--hint)}
+.ai{background:var(--field);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
 .ai .k{font-size:12px;color:var(--sub)}
 #pvComment{font-size:15px}
+.plate-line{font-size:13px;display:flex;gap:6px;align-items:center}
+.plate-line i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--hint)}
+.plate-line.match i{background:var(--ok)} .plate-line.bad i{background:var(--bad)} .plate-line.unread i{background:var(--warn)}
 .notes-k{font-size:13px;color:var(--sub)}
 .notes{display:flex;flex-wrap:wrap;gap:8px}
 .notes button{padding:5px 12px;border-radius:999px;background:var(--field);font-size:13px;color:var(--sub);border:1px solid transparent}
@@ -176,10 +188,12 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .rec .top b{font-size:16px}
 .rec dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;margin:0;font-size:12.5px}
 .rec dt{color:var(--sub)} .rec dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.rec dd.why{color:#b37700}
+.rec dd.why.red{color:var(--bad)}
 .rec .hash{font-family:var(--mono);font-size:11px;color:var(--sub)}
 .limits{font-size:12px;color:var(--sub)}
 .limits ul{margin:4px 0 0;padding-left:18px}
-@media (prefers-reduced-motion:reduce){.flash.go{animation:none}}
+@media (prefers-reduced-motion:reduce){.flash.go{animation:none}.dist .dot{transition:none}}
 </style>
 </head>
 <body>
@@ -193,7 +207,7 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   <div class="page">
     <div class="hero">
       <h2>跟著 AI 繞車一圈就拍好</h2>
-      <p>AI 會鎖定車輛、提示你調整，<span class="em">條件符合就自動拍下</span>，不用自己按快門。</p>
+      <p>把車放進取景框，框變<b style="color:var(--ok)">綠色</b>就會<span class="em">自動連拍並挑最清楚的一張</span>。</p>
     </div>
     <div class="card how">
       <svg viewBox="0 0 96 120" aria-hidden="true">
@@ -209,10 +223,16 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
         <path d="M30 14 Q48 6 66 14 M88 36 Q94 60 88 84 M66 106 Q48 114 30 106" fill="none" stroke="#d7000f" stroke-width="1.5" stroke-dasharray="3 3"/>
       </svg>
       <ol>
-        <li><b>1</b><span>站在<span class="em">左前方</span>，鏡頭對準車輛</span></li>
-        <li><b>2</b><span>照畫面指令調整，保持不動約 1 秒自動拍攝</span></li>
-        <li><b>3</b><span>依序走到右前、右後、左後</span></li>
+        <li><b>1</b><span>站在<span class="em">左前方</span>，把車放進取景框</span></li>
+        <li><b>2</b><span>照箭頭和距離條調整，框變綠色就自動拍</span></li>
+        <li><b>3</b><span>順時針走到右前、右後、左後</span></li>
       </ol>
+    </div>
+    <div class="card order">
+      <span class="tag">Demo 設定 · 模擬訂單</span>
+      <label for="plateInput">本次訂單車號</label>
+      <input id="plateInput" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="例如 ABC-1234" maxlength="9">
+      <p>正式版由訂單自動帶入，用戶無法修改。車牌會在拍車尾時自動比對，防止拍別台車充數。留空則略過車牌比對。</p>
     </div>
     <div class="card">
       <div class="row"><span class="k">拍攝車種</span>
@@ -243,20 +263,26 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
     <canvas id="overlay"></canvas>
     <div class="flash" id="flash"></div>
     <div class="chips" id="chips"></div>
+    <div class="notice" id="sensorNote" hidden>未偵測到方向感測器，系統無法確認你是否已走到下一個角，請依指示自行走到正確位置。</div>
+    <div class="dist" id="dist" hidden aria-hidden="true">
+      <div class="track"><div class="zone" id="distZone"></div><div class="dot" id="distDot"></div></div>
+      <div class="lbl"><span>太遠</span><span>剛好</span><span>太近</span></div>
+    </div>
     <div id="instr" role="status" aria-live="polite">準備中…</div>
-    <div class="plate">車號：DEMO-0001</div>
+    <div class="plate" id="platePill">車號：未設定</div>
     <div id="settings" hidden>
       <h3>判斷門檻 <button type="button" id="setClose">完成</button></h3>
       <div class="slider"><label for="sBright">亮度下限 <output id="oBright"></output></label><input id="sBright" type="range" min="10" max="140" step="1"></div>
       <div class="slider"><label for="sSharp">清晰度下限 <output id="oSharp"></output></label><input id="sSharp" type="range" min="5" max="300" step="1"></div>
-      <div class="slider"><label for="sTurn">換角需轉動角度 <output id="oTurn"></output></label><input id="sTurn" type="range" min="20" max="120" step="1"></div>
-      <div class="row"><label class="k" for="compassChk">用指南針判斷是否已換角</label><input type="checkbox" class="switch" id="compassChk" checked></div>
+      <div class="slider"><label for="sShake">晃動上限（度／秒） <output id="oShake"></output></label><input id="sShake" type="range" min="5" max="80" step="1"></div>
+      <div class="slider"><label for="sTurn">換角最小轉動角度 <output id="oTurn"></output></label><input id="sTurn" type="range" min="20" max="90" step="1"></div>
+      <div class="row"><label class="k" for="compassChk">用方向感測器判斷是否已換角</label><input type="checkbox" class="switch" id="compassChk" checked></div>
       <pre id="metrics"></pre>
     </div>
   </div>
   <div class="strip" id="strip"></div>
   <div class="cam-ctl">
-    <div class="auto-note"><b>AI 自動拍攝</b>條件符合即拍下</div>
+    <div class="auto-note"><b>AI 自動拍攝</b>框變綠色即連拍</div>
     <div>
       <button class="shutter" id="manualBtn" type="button" aria-label="手動拍攝"><span></span></button>
       <div class="shutter-lbl">手動拍攝</div>
@@ -273,7 +299,11 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
   <div class="pv-photo"><img id="pvImg" alt="剛拍下的照片"></div>
   <div class="sheet">
     <div class="head"><b id="pvTitle">左前</b><span class="light" id="pvLight"><i></i><span></span></span></div>
-    <div class="ai"><span class="k">AI 評語</span><span id="pvComment"></span></div>
+    <div class="ai">
+      <span class="k">AI 評語</span>
+      <span id="pvComment"></span>
+      <span class="plate-line" id="pvPlate" hidden><i></i><span></span></span>
+    </div>
     <div id="noteField">
       <div class="notes-k">補充說明（選填，點一下即可）</div>
       <div class="notes" id="notes"></div>
@@ -300,41 +330,49 @@ button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
     <div id="paneB" hidden></div>
     <button class="btn-red" id="restartBtn" type="button">重新拍一次</button>
     <div class="limits">此 Demo 尚未包含：
-      <ul><li>部位辨識（目前依序引導，以指南針判斷是否換角）</li><li>車牌與訂單比對</li><li>無訊號暫存與背景上傳</li></ul>
+      <ul><li>部位辨識模型（目前以車牌與方向感測器推斷方位，左前與右前仍可能混淆）</li><li>無訊號暫存與背景上傳</li></ul>
     </div>
   </div>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
-const RED = '#d7000f';
+const GO = '#18c964';
 
 /* ---------------- config ---------------- */
+// Walking clockwise (seen from above) turns the camera heading by about +90° per corner.
 const CORNERS = [
-  {id:'LF', name:'左前', move:null},
-  {id:'RF', name:'右前', move:'沿著車頭走到「右前」角'},
-  {id:'RR', name:'右後', move:'沿著右側走到「右後」角'},
-  {id:'LR', name:'左後', move:'沿著車尾走到「左後」角'},
+  {id:'LF', name:'左前', rear:false, move:null},
+  {id:'RF', name:'右前', rear:false, move:'沿著車頭走到「右前」角'},
+  {id:'RR', name:'右後', rear:true,  move:'沿著右側走到「右後」角'},
+  {id:'LR', name:'左後', rear:true,  move:'沿著車尾走到「左後」角'},
 ];
 const TARGETS = {
-  motorcycle:{label:'機車', classes:['motorcycle']},
-  car:{label:'汽車', classes:['car','truck','bus']},
+  motorcycle:{label:'機車', classes:['motorcycle'], aspect:1.25, plateOnFront:false},
+  car:{label:'汽車', classes:['car','truck','bus'], aspect:1.7, plateOnFront:true},
 };
 const NOTE_TAGS = ['現場太暗','空間太窄','被其他車擋住','其他'];
-const S = {minBright:55, maxBright:225, minSharp:40, turnDeg:55, useCompass:true,
-           fillMin:0.55, fillMax:0.93, offX:0.13, offY:0.16, holdMs:900, detectGap:110};
+const MODEL_DB = 'indexeddb://irent-coco-ssd-lite';
+const S = {
+  minBright:55, maxBright:225, minSharp:40, maxShake:28, turnMin:45, turnMax:150, useCompass:true,
+  sizeMin:0.72, sizeMax:1.08, offX:0.10, offY:0.13,
+  fillTime:0.45,   // seconds of continuous alignment to trigger capture
+  drainTime:1.4,   // seconds for a full ring to drain when alignment slips
+  burstAuto:5, burstManual:3, burstGap:70, detectGap:100, holdLostMs:450,
+};
 
 /* ---------------- state ---------------- */
 const st = {
-  target:'motorcycle', voice:true, model:null, stream:null,
+  target:'motorcycle', voice:true, plate:'', model:null, ocr:null, ocrState:'off', stream:null,
   phase:'start', idx:0, shots:[null,null,null,null], retakes:[0,0,0,0],
-  a:null, prev:null, passSince:0, cooldownUntil:0,
-  heading:null, headingSeen:false, pending:null,
-  instr:'', instrSince:0, spoken:'', spokenAt:0,
+  a:null, box:null, boxSeenAt:0, prevBox:null, progress:0, lastTick:0, cooldownUntil:0, camEnteredAt:0,
+  heading:null, headingSeen:false, compassMissing:false, shake:null, motionSeen:false,
+  pending:null, instr:'', instrSince:0, spoken:'', spokenAt:0,
 };
 
 /* ---------------- start screen ---------------- */
@@ -343,14 +381,18 @@ $('targetSeg').addEventListener('click', e => {
   st.target = b.dataset.target;
   for (const x of $('targetSeg').children) x.setAttribute('aria-pressed', x === b);
 });
+$('plateInput').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''); });
 
 $('startBtn').addEventListener('click', async () => {
   const msg = $('startMsg'), btn = $('startBtn');
   st.voice = $('voiceChk').checked;
+  st.plate = $('plateInput').value.trim();
   if (!window.isSecureContext) { msg.textContent = '相機只能在 https 網址下使用，請用 GitHub Pages 的網址開啟。'; return; }
   if (!navigator.mediaDevices?.getUserMedia) { msg.textContent = '這個瀏覽器不支援相機，請改用 Chrome 或 Safari。'; return; }
   btn.disabled = true;
+  // iOS asks for motion sensors and speech only from a tap
   try { if (typeof DeviceOrientationEvent !== 'undefined' && DeviceOrientationEvent.requestPermission) await DeviceOrientationEvent.requestPermission(); } catch(_) {}
+  try { if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) await DeviceMotionEvent.requestPermission(); } catch(_) {}
   if (st.voice && 'speechSynthesis' in window) { try { const u = new SpeechSynthesisUtterance(' '); u.lang='zh-TW'; speechSynthesis.speak(u); } catch(_) {} }
   if (!st.stream) {
     try {
@@ -363,22 +405,50 @@ $('startBtn').addEventListener('click', async () => {
     try { await v.play(); } catch(_) {}
   }
   if (!st.model) {
-    msg.textContent = '載入 AI 模型中（第一次約 5–15 秒）…';
-    try { st.model = await cocoSsd.load({base:'lite_mobilenet_v2'}); }
+    msg.textContent = '載入 AI 模型中…';
+    try { st.model = await loadDetector(m => msg.textContent = m); }
     catch (err) { msg.textContent = 'AI 模型載入失敗，請確認網路後重新整理。'; btn.disabled = false; return; }
   }
+  if (st.plate && st.ocrState === 'off') initOcr();   // loads in the background
   msg.textContent = '';
   try { await navigator.wakeLock?.request('screen'); } catch(_) {}
   window.addEventListener('deviceorientation', onOrient);
+  window.addEventListener('devicemotion', onMotion);
+  $('platePill').textContent = st.plate ? `車號：${st.plate}` : '車號：未設定（略過比對）';
   resetRun();
   show('cam');
   btn.disabled = false;
 });
 $('closeBtn').addEventListener('click', () => { try { speechSynthesis.cancel(); } catch(_) {} show('start'); });
 
+/* ---------------- model loading with on-device cache ---------------- */
+async function loadDetector(report){
+  try {
+    const saved = await tf.io.listModels();
+    if (saved && saved[MODEL_DB]) {
+      report('從手機載入 AI 模型…');
+      return await cocoSsd.load({base:'lite_mobilenet_v2', modelUrl: MODEL_DB});
+    }
+  } catch(_) {}
+  report('下載 AI 模型中（第一次約 5–15 秒）…');
+  const m = await cocoSsd.load({base:'lite_mobilenet_v2'});
+  try { await m.model?.save(MODEL_DB); } catch(_) {}   // next launch reads it from the phone
+  return m;
+}
+
+async function initOcr(){
+  if (typeof Tesseract === 'undefined') { st.ocrState = 'failed'; return; }
+  st.ocrState = 'loading';
+  try {
+    const w = await Tesseract.createWorker('eng', 1);
+    await w.setParameters({tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-', tessedit_pageseg_mode:'11'});
+    st.ocr = w; st.ocrState = 'ready';
+  } catch(_) { st.ocrState = 'failed'; }
+}
+
 function resetRun(){
   st.idx = 0; st.shots = [null,null,null,null]; st.retakes = [0,0,0,0];
-  st.passSince = 0; st.cooldownUntil = performance.now() + 800; st.prev = null;
+  st.progress = 0; st.cooldownUntil = performance.now() + 800; st.box = null; st.prevBox = null;
   st.spoken = ''; st.instr = '';
   updateCornerUI();
 }
@@ -387,35 +457,93 @@ function show(name){
   st.phase = name;
   for (const s of ['start','cam','preview','done']) $(s).hidden = s !== name;
   document.querySelector('meta[name=theme-color]').content = (name === 'cam' || name === 'preview') ? '#000000' : '#ffffff';
-  if (name === 'cam') { sizeOverlay(); detectLoop(); requestAnimationFrame(drawLoop); }
+  if (name === 'cam') {
+    st.camEnteredAt = performance.now(); st.lastTick = 0;
+    $('manualBtn').disabled = false;
+    sizeOverlay(); detectLoop(); requestAnimationFrame(drawLoop);
+  }
 }
 
-/* ---------------- compass (relative heading of the camera) ---------------- */
+/* ---------------- sensors ---------------- */
 function onOrient(e){
   if (e.alpha == null || e.beta == null || e.gamma == null) return;
   const d = Math.PI/180, a=e.alpha*d, b=e.beta*d, g=e.gamma*d;
   const cA=Math.cos(a), sA=Math.sin(a), cB=Math.cos(b), sB=Math.sin(b), cG=Math.cos(g), sG=Math.sin(g);
-  // back camera looks along -Z of the device; project that direction onto the ground plane
+  // The back camera looks along the device's -Z axis; project it onto the ground plane.
+  // Result is a clockwise-from-north heading (relative on iOS, which is all we need).
   const x = -(cA*sG + sA*sB*cG), y = -(sA*sG - cA*sB*cG);
-  if (Math.hypot(x,y) < 0.35) return;        // phone held flat: heading unreliable
+  if (Math.hypot(x,y) < 0.35) return;
   st.heading = (Math.atan2(x,y)/d + 360) % 360;
   st.headingSeen = true;
 }
-const angDiff = (p,q) => Math.abs(((p - q + 540) % 360) - 180);
+function onMotion(e){
+  const r = e.rotationRate; if (!r || r.alpha == null) return;
+  const mag = Math.hypot(r.alpha || 0, r.beta || 0, r.gamma || 0);
+  st.shake = st.shake == null ? mag : st.shake*0.7 + mag*0.3;
+  st.motionSeen = true;
+}
+const signedDiff = (p,q) => ((p - q + 540) % 360) - 180;
 
 function turnState(){
   const i = st.idx;
-  if (i === 0) return {need:false, ok:true};
+  if (i === 0) return {need:false};
   const ref = st.shots[i-1]?.heading;
-  if (!S.useCompass || !st.headingSeen || ref == null || st.heading == null) return {need:false, ok:true, skipped:true};
-  const deg = angDiff(st.heading, ref);
-  return {need:true, ok: deg >= S.turnDeg, deg};
+  if (!S.useCompass || !st.headingSeen || ref == null || st.heading == null) return {need:false, skipped:true};
+  const deg = signedDiff(st.heading, ref);
+  if (deg <= -S.turnMin) return {need:true, ok:false, why:'reverse', deg};
+  if (deg < S.turnMin)   return {need:true, ok:false, why:'short', deg};
+  if (deg > S.turnMax)   return {need:true, ok:false, why:'over', deg};
+  return {need:true, ok:true, deg};
+}
+
+/* ---------------- geometry ---------------- */
+function viewMap(){
+  const v = $('video'), stg = $('stage');
+  const cw = stg.clientWidth, ch = stg.clientHeight, vw = v.videoWidth, vh = v.videoHeight;
+  const s = Math.max(cw/vw, ch/vh);
+  return {cw, ch, s, ox:(cw - vw*s)/2, oy:(ch - vh*s)/2};
+}
+// The aiming frame, in stage (screen) pixels
+function guideRect(){
+  const stg = $('stage'), W = stg.clientWidth, H = stg.clientHeight;
+  const asp = TARGETS[st.target].aspect;
+  let w = W*0.86, h = w/asp;
+  if (h > H*0.52) { h = H*0.52; w = h*asp; }
+  return {x:(W-w)/2, y:H*0.43 - h/2, w, h};
+}
+const toScreen = (b, M) => ({x:b[0]*M.s + M.ox, y:b[1]*M.s + M.oy, w:b[2]*M.s, h:b[3]*M.s});
+const toVideo = (r, M) => [(r.x - M.ox)/M.s, (r.y - M.oy)/M.s, r.w/M.s, r.h/M.s];
+function iou(a, b){
+  const x1 = Math.max(a.x,b.x), y1 = Math.max(a.y,b.y), x2 = Math.min(a.x+a.w,b.x+b.w), y2 = Math.min(a.y+a.h,b.y+b.h);
+  const i = Math.max(0,x2-x1)*Math.max(0,y2-y1);
+  return i / (a.w*a.h + b.w*b.h - i || 1);
+}
+
+/* ---------------- image measures ---------------- */
+const small = document.createElement('canvas');
+const sctx = small.getContext('2d', {willReadFrequently:true});
+function measure(src, x, y, w, h){
+  // mean brightness + sharpness (variance of the Laplacian) on a downscaled grey crop
+  const SW = src.videoWidth || src.width, SH = src.videoHeight || src.height;
+  x = Math.max(0, x); y = Math.max(0, y); w = Math.min(SW - x, w); h = Math.min(SH - y, h);
+  if (w < 8 || h < 8) return {bright:0, sharp:0};
+  const k = 160 / Math.max(w, h);
+  const W = Math.max(8, Math.round(w*k)), H = Math.max(8, Math.round(h*k));
+  small.width = W; small.height = H;
+  sctx.drawImage(src, x, y, w, h, 0, 0, W, H);
+  const px = sctx.getImageData(0, 0, W, H).data;
+  const g = new Float32Array(W*H); let sum = 0;
+  for (let i=0, j=0; i<px.length; i+=4, j++) { const val = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2]; g[j]=val; sum+=val; }
+  let n=0, m=0, m2=0;
+  for (let yy=1; yy<H-1; yy++) for (let xx=1; xx<W-1; xx++) {
+    const p = yy*W + xx, lap = g[p-1] + g[p+1] + g[p-W] + g[p+W] - 4*g[p];
+    n++; m += lap; m2 += lap*lap;
+  }
+  const mean = m/n;
+  return {bright: sum/(W*H), sharp: m2/n - mean*mean};
 }
 
 /* ---------------- detection loop ---------------- */
-const small = document.createElement('canvas');
-const sctx = small.getContext('2d', {willReadFrequently:true});
-
 async function detectLoop(){
   if (st.phase !== 'cam' || st._detecting) return;
   st._detecting = true;
@@ -424,114 +552,101 @@ async function detectLoop(){
     const t0 = performance.now();
     if (v.readyState >= 2 && v.videoWidth) {
       let preds = [];
-      try { preds = await st.model.detect(v, 10, 0.3); } catch(_) {}
+      try { preds = await st.model.detect(v, 10, 0.25); } catch(_) {}
       if (st.phase === 'cam') analyze(preds);
     }
-    const wait = Math.max(0, S.detectGap - (performance.now() - t0));
-    await new Promise(r => setTimeout(r, wait));
+    await new Promise(r => setTimeout(r, Math.max(0, S.detectGap - (performance.now() - t0))));
   }
   st._detecting = false;
 }
 
-function viewMap(){
-  const v = $('video'), stg = $('stage');
-  const cw = stg.clientWidth, ch = stg.clientHeight, vw = v.videoWidth, vh = v.videoHeight;
-  const s = Math.max(cw/vw, ch/vh);
-  const ox = (cw - vw*s)/2, oy = (ch - vh*s)/2;
-  return {cw, ch, vw, vh, s, ox, oy, vx0:-ox/s, vy0:-oy/s, vW:cw/s, vH:ch/s};
-}
-
-function measure(x, y, w, h){
-  // brightness + sharpness (variance of the Laplacian) on a downscaled grey crop
-  const v = $('video');
-  x = Math.max(0, x); y = Math.max(0, y);
-  w = Math.min(v.videoWidth - x, w); h = Math.min(v.videoHeight - y, h);
-  if (w < 8 || h < 8) return {bright:0, sharp:0};
-  const k = 160 / Math.max(w, h);
-  const W = Math.max(8, Math.round(w*k)), H = Math.max(8, Math.round(h*k));
-  small.width = W; small.height = H;
-  sctx.drawImage(v, x, y, w, h, 0, 0, W, H);
-  const px = sctx.getImageData(0, 0, W, H).data;
-  const g = new Float32Array(W*H); let sum = 0;
-  for (let i=0, j=0; i<px.length; i+=4, j++) { const val = 0.299*px[i] + 0.587*px[i+1] + 0.114*px[i+2]; g[j]=val; sum+=val; }
-  let n=0, m=0, m2=0;
-  for (let yy=1; yy<H-1; yy++) for (let xx=1; xx<W-1; xx++) {
-    const p = yy*W + xx;
-    const lap = g[p-1] + g[p+1] + g[p-W] + g[p+W] - 4*g[p];
-    n++; m += lap; m2 += lap*lap;
-  }
-  const mean = m/n;
-  return {bright: sum/(W*H), sharp: m2/n - mean*mean};
-}
-
 function analyze(preds){
-  const M = viewMap();
+  const now = performance.now(), M = viewMap(), G = guideRect();
   const classes = TARGETS[st.target].classes;
+  // Only vehicles that sit in the aiming frame count; background cars and metal are ignored.
   let best = null;
   for (const p of preds) {
     if (!classes.includes(p.class)) continue;
-    const ar = p.bbox[2]*p.bbox[3];
-    if (!best || ar > best.ar) best = {...p, ar};
+    const r = toScreen(p.bbox, M), cx = r.x + r.w/2, cy = r.y + r.h/2;
+    if (cx < G.x || cx > G.x + G.w || cy < G.y || cy > G.y + G.h) continue;
+    const ov = iou(r, G);
+    if (ov < 0.15) continue;
+    if (!best || ov > best.ov) best = {r, ov, score:p.score, bbox:p.bbox};
   }
-  const a = {found:!!best, score: best?.score || 0, turn: turnState()};
   if (best) {
-    const [x,y,w,h] = best.bbox;
-    const nx = (x - M.vx0)/M.vW, ny = (y - M.vy0)/M.vH, nw = w/M.vW, nh = h/M.vH;
-    a.box = best.bbox;
-    a.cx = nx + nw/2; a.cy = ny + nh/2;
-    a.fill = Math.max(Math.min(nw,1), Math.min(nh,1));
-    a.edge = nx < 0.015 || ny < 0.015 || nx + nw > 0.985 || ny + nh > 0.985;
-    Object.assign(a, measure(x, y, w, h));
-    const pv = st.prev;
-    a.steady = !!pv && Math.hypot(a.cx - pv.cx, a.cy - pv.cy) < 0.03 && Math.abs(a.fill - pv.fill) < 0.05;
-    st.prev = {cx:a.cx, cy:a.cy, fill:a.fill};
-  } else {
-    Object.assign(a, measure(M.vx0, M.vy0, M.vW, M.vH));
-    st.prev = null;
+    // smooth the box so the readings don't jitter frame to frame
+    const r = st.box ? lerpRect(st.box, best.r, 0.55) : best.r;
+    st.box = r; st.boxSeenAt = now; st.score = best.score;
+  } else if (st.box && now - st.boxSeenAt > S.holdLostMs) {
+    st.box = null;
   }
+  const a = {found: !!st.box, score: st.score || 0, turn: turnState(), G};
+  if (a.found) {
+    const r = st.box;
+    a.dx = ((r.x + r.w/2) - (G.x + G.w/2)) / G.w;
+    a.dy = ((r.y + r.h/2) - (G.y + G.h/2)) / G.h;
+    a.size = Math.max(r.w/G.w, r.h/G.h);
+    a.edge = r.x < 3 || r.y < 3 || r.x + r.w > M.cw - 3 || r.y + r.h > M.ch - 3;
+  }
+  Object.assign(a, measure($('video'), ...toVideo(G, M)));
+  if (st.motionSeen) a.steady = st.shake <= S.maxShake;
+  else {
+    const pv = st.prevBox, r = st.box;
+    a.steady = !!(pv && r) && Math.hypot((r.x-pv.x)/G.w, (r.y-pv.y)/G.h) < 0.05;
+  }
+  st.prevBox = st.box ? {...st.box} : null;
+  if (!st.compassMissing && S.useCompass && !st.headingSeen && now - st.camEnteredAt > 2500) st.compassMissing = true;
+  $('sensorNote').hidden = !(st.compassMissing && S.useCompass);
+
   a.checks = checksOf(a);
   a.pass = Object.values(a.checks).every(c => c.ok !== false);
   st.a = a;
-  decide(a);
+  tick(a, now);
 }
+const lerpRect = (p, q, t) => ({x:p.x+(q.x-p.x)*t, y:p.y+(q.y-p.y)*t, w:p.w+(q.w-p.w)*t, h:p.h+(q.h-p.h)*t});
 
 function checksOf(a){
   const lbl = TARGETS[st.target].label;
   return {
-    found:  {name:'鎖定'+lbl, ok:a.found},
+    found:  {name:`${lbl}在框內`, ok:a.found},
     turn:   {name:'已換到這個角', ok: a.turn.need ? a.turn.ok : null},
     light:  {name:'光線', ok: a.bright >= S.minBright && a.bright <= S.maxBright},
-    whole:  {name:'完整入鏡', ok: a.found && !a.edge && a.fill <= S.fillMax},
-    near:   {name:'距離', ok: a.found && a.fill >= S.fillMin},
-    center: {name:'置中', ok: a.found && Math.abs(a.cx-0.5) <= S.offX && Math.abs(a.cy-0.5) <= S.offY},
-    sharp:  {name:'清晰穩定', ok: a.found && a.sharp >= S.minSharp && a.steady},
+    near:   {name:'距離', ok: a.found && !a.edge && a.size >= S.sizeMin && a.size <= S.sizeMax},
+    center: {name:'置中', ok: a.found && Math.abs(a.dx) <= S.offX && Math.abs(a.dy) <= S.offY},
+    steady: {name:'手機穩定', ok: !!a.steady},
   };
 }
 
 function instructionOf(a){
-  const lbl = TARGETS[st.target].label, c = a.checks, corner = CORNERS[st.idx];
-  if (c.turn.ok === false) return `${corner.move}（已轉 ${Math.round(a.turn.deg)}°）`;
-  if (!a.found) return `請把${lbl}放進畫面`;
+  const lbl = TARGETS[st.target].label, c = a.checks, corner = CORNERS[st.idx], t = a.turn;
+  if (t.need && !t.ok) {
+    if (t.why === 'reverse') return `方向反了，請往另一邊走。${corner.move}`;
+    if (t.why === 'over') return `好像走過頭了，請退回「${corner.name}」角`;
+    return `${corner.move}（已轉 ${Math.max(0, Math.round(t.deg))}°）`;
+  }
+  if (!a.found) return `把${lbl}放進取景框內`;
   if (a.bright < S.minBright) return '光線太暗，靠近光源，或改用手動拍攝';
   if (a.bright > S.maxBright) return '畫面過亮，換個角度避開強光';
-  if (!c.whole.ok) return `後退一點，讓${lbl}完整入鏡`;
-  if (!c.near.ok) return '再靠近一點';
-  if (Math.abs(a.cx-0.5) > S.offX) return a.cx < 0.5 ? '鏡頭往左一點' : '鏡頭往右一點';
-  if (Math.abs(a.cy-0.5) > S.offY) return a.cy < 0.5 ? '鏡頭往上一點' : '鏡頭往下一點';
-  if (!c.sharp.ok) return '拿穩手機，不要晃動';
+  if (a.edge || a.size > S.sizeMax) return a.size > 1.3 ? '後退多一些（約一步）' : '後退一點點';
+  if (a.size < S.sizeMin) return a.size < 0.5 ? '再靠近多一些（約一兩步）' : '再靠近一點點';
+  if (Math.abs(a.dx) > S.offX) return `鏡頭往${a.dx < 0 ? '左' : '右'}${Math.abs(a.dx) > 0.25 ? '多一些' : '一點點'}`;
+  if (Math.abs(a.dy) > S.offY) return `鏡頭往${a.dy < 0 ? '上' : '下'}${Math.abs(a.dy) > 0.3 ? '多一些' : '一點點'}`;
+  if (!c.steady.ok) return '拿穩手機，不要晃動';
   return '很好，保持不動…';
 }
 
-function decide(a){
-  const now = performance.now();
+function tick(a, now){
+  const dt = st.lastTick ? Math.min(0.3, (now - st.lastTick)/1000) : 0;
+  st.lastTick = now;
   setInstr(instructionOf(a), a.pass);
-  renderChips(a);
+  renderChips(a); renderDist(a);
   if (!$('settings').hidden) renderMetrics(a);
-  if (now < st.cooldownUntil) { st.passSince = 0; return; }
-  if (a.pass) {
-    if (!st.passSince) st.passSince = now;
-    if (now - st.passSince >= S.holdMs) { st.passSince = 0; capture('auto'); }
-  } else st.passSince = 0;
+  if (now < st.cooldownUntil) { st.progress = 0; return; }
+  // A short wobble only drains the ring a little; losing the vehicle drains it fast.
+  if (a.pass) st.progress += dt / S.fillTime;
+  else st.progress -= dt / (a.found ? S.drainTime : S.drainTime/3);
+  st.progress = Math.max(0, Math.min(1, st.progress));
+  if (st.progress >= 1) { st.progress = 0; capture('auto'); }
 }
 
 /* ---------------- instruction + voice ---------------- */
@@ -540,7 +655,7 @@ function setInstr(text, ready){
   if (text !== st.instr) { st.instr = text; st.instrSince = performance.now(); el.textContent = text; }
   el.classList.toggle('ready', !!ready);
   const now = performance.now();
-  if (st.voice && 'speechSynthesis' in window && text !== st.spoken && now - st.instrSince > 650 && now - st.spokenAt > 2200) {
+  if (st.voice && 'speechSynthesis' in window && text !== st.spoken && now - st.instrSince > 600 && now - st.spokenAt > 2000) {
     say(text.replace(/（.*?）/g,'').replace('…',''));
     st.spoken = text;
   }
@@ -555,6 +670,16 @@ function renderChips(a){
     .filter(([k, c]) => c.ok !== null || (k === 'turn' && st.idx > 0))
     .map(([, c]) => `<span class="chip ${c.ok === null ? 'skip' : c.ok ? 'on' : ''}"><i></i>${c.name}</span>`).join('');
 }
+// size 0.3 → left (far), 1.4 → right (near)
+const distPos = s => Math.max(0, Math.min(100, (s - 0.3) / 1.1 * 100));
+function renderDist(a){
+  const el = $('dist');
+  el.hidden = !a.found;
+  if (!a.found) return;
+  $('distZone').style.left = distPos(S.sizeMin) + '%';
+  $('distZone').style.width = (distPos(S.sizeMax) - distPos(S.sizeMin)) + '%';
+  $('distDot').style.left = distPos(a.edge ? Math.max(a.size, 1.3) : a.size) + '%';
+}
 
 /* ---------------- overlay drawing ---------------- */
 const ov = $('overlay'), octx = ov.getContext('2d');
@@ -567,47 +692,78 @@ window.addEventListener('resize', () => { if (st.phase === 'cam') sizeOverlay();
 
 function drawLoop(){
   if (st.phase !== 'cam') return;
-  const stg = $('stage'), W = stg.clientWidth, H = stg.clientHeight;
+  const stg = $('stage'), W = stg.clientWidth, H = stg.clientHeight, G = guideRect(), a = st.a;
   octx.clearRect(0,0,W,H);
-  const a = st.a, v = $('video');
-  if (a?.found && v.videoWidth) {
-    const M = viewMap();
-    const [x,y,w,h] = a.box;
-    const X = x*M.s + M.ox, Y = y*M.s + M.oy, BW = w*M.s, BH = h*M.s;
-    const col = a.pass ? RED : '#ffffff';
-    brackets(X, Y, BW, BH, col);
-    const label = `${TARGETS[st.target].label} ${Math.round(a.score*100)}%`;
-    octx.font = '600 12px ' + getComputedStyle(document.body).fontFamily;
-    const tw = octx.measureText(label).width + 14, ly = Math.max(40, Y - 26);
-    octx.fillStyle = a.pass ? RED : '#000000a0';
-    roundRect(X, ly, tw, 20, 10); octx.fill();
-    octx.fillStyle = '#fff'; octx.fillText(label, X + 7, ly + 14);
-    if (st.passSince) {
-      const p = Math.min(1, (performance.now() - st.passSince)/S.holdMs);
-      const cx = X + BW/2, cy = Y + BH/2;
-      octx.lineWidth = 6; octx.strokeStyle = '#ffffff55';
-      octx.beginPath(); octx.arc(cx, cy, 32, 0, Math.PI*2); octx.stroke();
-      octx.strokeStyle = RED;
-      octx.beginPath(); octx.arc(cx, cy, 32, -Math.PI/2, -Math.PI/2 + p*Math.PI*2); octx.stroke();
-    }
+  const ready = !!a?.pass;
+  // dim everything outside the frame so the frame reads as "put it here"
+  octx.save();
+  octx.fillStyle = '#00000059';
+  octx.beginPath(); octx.rect(0,0,W,H); roundRectPath(G.x, G.y, G.w, G.h, 14); octx.fill('evenodd');
+  octx.restore();
+  // what the AI is tracking, drawn faint
+  if (a?.found && st.box) {
+    const r = st.box;
+    octx.save(); octx.strokeStyle = '#ffffff66'; octx.lineWidth = 1.5; octx.setLineDash([4,4]);
+    roundRectPath(r.x, r.y, r.w, r.h, 6); octx.stroke(); octx.restore();
+  }
+  // the fixed aiming frame
+  octx.save();
+  octx.lineWidth = ready ? 4 : 2.5;
+  octx.strokeStyle = ready ? GO : '#ffffff';
+  if (!ready && !a?.found) octx.setLineDash([10,8]);
+  roundRectPath(G.x, G.y, G.w, G.h, 14); octx.stroke();
+  octx.restore();
+  corners(G, ready ? GO : '#ffffff');
+  // direction arrows, longer when further off
+  if (a?.found && !a.checks.center.ok && a.checks.found.ok) {
+    if (Math.abs(a.dx) > S.offX) arrow(a.dx > 0 ? 'right' : 'left', G, Math.abs(a.dx));
+    if (Math.abs(a.dy) > S.offY) arrow(a.dy > 0 ? 'down' : 'up', G, Math.abs(a.dy));
+  }
+  // progress ring
+  if (st.progress > 0.01) {
+    const cx = G.x + G.w/2, cy = G.y + G.h/2;
+    octx.lineWidth = 6; octx.strokeStyle = '#ffffff55';
+    octx.beginPath(); octx.arc(cx, cy, 30, 0, Math.PI*2); octx.stroke();
+    octx.strokeStyle = GO; octx.lineCap = 'round';
+    octx.beginPath(); octx.arc(cx, cy, 30, -Math.PI/2, -Math.PI/2 + st.progress*Math.PI*2); octx.stroke();
   }
   requestAnimationFrame(drawLoop);
 }
-function roundRect(x,y,w,h,r){ octx.beginPath(); octx.moveTo(x+r,y); octx.arcTo(x+w,y,x+w,y+h,r); octx.arcTo(x+w,y+h,x,y+h,r); octx.arcTo(x,y+h,x,y,r); octx.arcTo(x,y,x+w,y,r); octx.closePath(); }
-function brackets(x,y,w,h,col){
-  const L = Math.min(28, w/3, h/3);
-  octx.strokeStyle = col; octx.lineWidth = 4; octx.lineCap = 'round';
+function roundRectPath(x,y,w,h,r){ octx.moveTo(x+r,y); octx.arcTo(x+w,y,x+w,y+h,r); octx.arcTo(x+w,y+h,x,y+h,r); octx.arcTo(x,y+h,x,y,r); octx.arcTo(x,y,x+w,y,r); octx.closePath(); }
+function corners(G, col){
+  const L = 26, {x,y,w,h} = G;
+  octx.save(); octx.strokeStyle = col; octx.lineWidth = 6; octx.lineCap = 'round';
   octx.beginPath();
-  octx.moveTo(x, y+L); octx.lineTo(x, y); octx.lineTo(x+L, y);
-  octx.moveTo(x+w-L, y); octx.lineTo(x+w, y); octx.lineTo(x+w, y+L);
-  octx.moveTo(x+w, y+h-L); octx.lineTo(x+w, y+h); octx.lineTo(x+w-L, y+h);
-  octx.moveTo(x+L, y+h); octx.lineTo(x, y+h); octx.lineTo(x, y+h-L);
-  octx.stroke();
+  octx.moveTo(x, y+L); octx.lineTo(x, y+6); octx.quadraticCurveTo(x, y, x+6, y); octx.lineTo(x+L, y);
+  octx.moveTo(x+w-L, y); octx.lineTo(x+w-6, y); octx.quadraticCurveTo(x+w, y, x+w, y+6); octx.lineTo(x+w, y+L);
+  octx.moveTo(x+w, y+h-L); octx.lineTo(x+w, y+h-6); octx.quadraticCurveTo(x+w, y+h, x+w-6, y+h); octx.lineTo(x+w-L, y+h);
+  octx.moveTo(x+L, y+h); octx.lineTo(x+6, y+h); octx.quadraticCurveTo(x, y+h, x, y+h-6); octx.lineTo(x, y+h-L);
+  octx.stroke(); octx.restore();
+}
+function arrow(dir, G, amount){
+  const len = Math.max(26, Math.min(96, amount * 220));
+  const cx = G.x + G.w/2, cy = G.y + G.h/2;
+  let x0, y0, x1, y1;
+  if (dir === 'right') { x0 = cx + 40; y0 = cy; x1 = x0 + len; y1 = cy; }
+  if (dir === 'left')  { x0 = cx - 40; y0 = cy; x1 = x0 - len; y1 = cy; }
+  if (dir === 'down')  { x0 = cx; y0 = cy + 40; x1 = cx; y1 = y0 + len; }
+  if (dir === 'up')    { x0 = cx; y0 = cy - 40; x1 = cx; y1 = y0 - len; }
+  const ang = Math.atan2(y1 - y0, x1 - x0);
+  octx.save();
+  octx.strokeStyle = '#ffffff'; octx.fillStyle = '#ffffff'; octx.lineWidth = 7; octx.lineCap = 'round';
+  octx.shadowColor = '#000a'; octx.shadowBlur = 6;
+  octx.beginPath(); octx.moveTo(x0, y0); octx.lineTo(x1 - 10*Math.cos(ang), y1 - 10*Math.sin(ang)); octx.stroke();
+  octx.beginPath();
+  octx.moveTo(x1, y1);
+  octx.lineTo(x1 - 20*Math.cos(ang - 0.5), y1 - 20*Math.sin(ang - 0.5));
+  octx.lineTo(x1 - 20*Math.cos(ang + 0.5), y1 - 20*Math.sin(ang + 0.5));
+  octx.closePath(); octx.fill();
+  octx.restore();
 }
 
 /* ---------------- progress strip ---------------- */
 const lightColor = l => l === 'green' ? '#14a85a' : l === 'yellow' ? '#f0a000' : '#d7000f';
-const lightText = l => l === 'green' ? '綠燈・合格' : l === 'yellow' ? '黃燈・待人工確認' : '紅燈・必須重拍';
+const lightText = l => l === 'green' ? '綠燈・合格' : l === 'yellow' ? '黃燈・待人工確認' : l === 'red' ? '紅燈・必須重拍' : '檢查中…';
 const lightShort = l => l === 'green' ? '綠燈' : l === 'yellow' ? '黃燈' : '紅燈';
 
 function updateCornerUI(){
@@ -619,59 +775,161 @@ function updateCornerUI(){
   }).join('');
 }
 
-/* ---------------- capture ---------------- */
+/* ---------------- capture: burst, keep the sharpest ---------------- */
 $('manualBtn').addEventListener('click', () => capture('manual'));
 
 async function capture(mode){
   if (st.phase !== 'cam') return;
   const v = $('video'); if (!v.videoWidth) return;
-  const a = st.a || {checks:{}, found:false, bright:0, sharp:0};
-  const c = document.createElement('canvas');
-  c.width = v.videoWidth; c.height = v.videoHeight;
-  c.getContext('2d').drawImage(v, 0, 0);
+  const a = st.a || {checks:{}, found:false, bright:0, turn:{need:false}};
+  const M = viewMap(), G = guideRect(), region = toVideo(G, M);
+  const box = st.box ? toVideo(st.box, M) : null;
+  st.phase = 'capturing';
+  $('manualBtn').disabled = true;
+  setInstr('連拍中，請保持不動…', true);
+  const n = mode === 'auto' ? S.burstAuto : S.burstManual;
+  let best = null;
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('canvas');
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    const m = measure(c, ...region);
+    if (!best || m.sharp > best.m.sharp) best = {c, m};
+    if (i < n - 1) await new Promise(r => setTimeout(r, S.burstGap));
+  }
   $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go');
   if (navigator.vibrate) navigator.vibrate(40);
-  st.phase = 'capturing';
-  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+  const blob = await new Promise(r => best.c.toBlob(r, 'image/jpeg', 0.92));
   let hash = '（此瀏覽器無法計算）';
   try { const buf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()); hash = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join(''); } catch(_) {}
-  st.pending = {
-    corner: CORNERS[st.idx].name, mode, url: URL.createObjectURL(blob), hash,
-    time: new Date(), heading: st.heading, aiPass: !!a.pass,
-    comment: commentOf(a, mode), notes: [], baseline: !!a.found && a.bright >= 15,
+  const corner = CORNERS[st.idx], tgt = TARGETS[st.target];
+  const plateWanted = !!st.plate && (corner.rear || tgt.plateOnFront);
+  const plateProbe = !!st.plate && !tgt.plateOnFront && !corner.rear;   // front of a scooter: a readable plate means wrong side
+  const p = {
+    corner: corner.name, cornerRear: corner.rear, mode, url: URL.createObjectURL(blob), hash, burst: n,
+    time: new Date(), heading: st.heading, aiPass: !!a.pass, found: !!a.found, bright: a.bright,
+    sharp: best.m.sharp, failed: Object.values(a.checks).filter(x => x.ok === false).map(x => x.name),
+    notes: [], baseline: !!a.found && a.bright >= 15,
+    plate: (plateWanted || plateProbe) && a.found ? {status: (st.ocrState === 'ready' || st.ocrState === 'loading') ? 'reading' : 'unavailable'} : null,
+    plateWanted, plateProbe,
   };
+  if (p.sharp < S.minSharp) p.failed.push('清晰度');
+  p.comment = commentOf(a, p);
+  st.pending = p;
   say('已拍下');
   openPreview();
+  if (p.plate && p.plate.status === 'reading') readPlate(p, best.c, box);
 }
 
-function commentOf(a, mode){
+function commentOf(a, p){
   const lbl = TARGETS[st.target].label;
-  if (!a.found) return `畫面中找不到${lbl}，這張不能作為證據，請重拍。`;
+  if (!a.found) return `取景框內找不到${lbl}，這張不能作為證據，請重拍。`;
   if (a.bright < 15) return '畫面幾乎全黑，請重拍。';
   const issues = [];
   if (a.bright < S.minBright) issues.push('偏暗');
   if (a.bright > S.maxBright) issues.push('過亮或反光');
-  if (a.edge || a.fill > S.fillMax) issues.push(`${lbl}有部分被裁切`);
-  else if (a.fill < S.fillMin) issues.push('距離偏遠，細節可能看不清楚');
-  if (Math.abs(a.cx-0.5) > S.offX || Math.abs(a.cy-0.5) > S.offY) issues.push(`${lbl}沒有置中`);
-  if (a.sharp < S.minSharp || !a.steady) issues.push('可能有些模糊');
-  if (a.turn?.need && !a.turn.ok) issues.push('角度可能和上一張太接近');
-  if (!issues.length) return `清晰、完整入鏡，${lbl}位置良好。`;
-  return `這張${issues.join('、')}。` + (mode === 'manual' ? '已保留，將由專人確認證據力。' : '');
+  if (a.edge || a.size > S.sizeMax) issues.push(`${lbl}有部分被裁切`);
+  else if (a.size < S.sizeMin) issues.push('距離偏遠，細節可能看不清楚');
+  if (Math.abs(a.dx) > S.offX || Math.abs(a.dy) > S.offY) issues.push(`${lbl}沒有置中`);
+  if (p.sharp < S.minSharp) issues.push('可能有些模糊');
+  if (a.turn?.need && !a.turn.ok) issues.push('角度可能不是這個角');
+  const burst = `已從 ${p.burst} 張連拍中挑出最清楚的一張。`;
+  if (!issues.length) return `清晰、完整入鏡，${lbl}位置良好。${burst}`;
+  return `這張${issues.join('、')}。${burst}` + (p.mode === 'manual' ? '已保留，將由專人確認證據力。' : '');
+}
+
+/* ---------------- plate OCR ---------------- */
+const normPlate = s => s.toUpperCase().replace(/[^A-Z0-9]/g, '');
+function lev(a, b){
+  const d = Array.from({length:a.length+1}, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+const looksLikePlate = t => /^[A-Z0-9]{5,7}$/.test(t) && /[A-Z]/.test(t) && /\d/.test(t);
+
+async function readPlate(p, canvas, box){
+  // crop the vehicle (or the whole frame), enlarge and grey it for OCR
+  const [bx, by, bw, bh] = box || [0, 0, canvas.width, canvas.height];
+  const x = Math.max(0, bx), y = Math.max(0, by + bh*0.15), w = Math.min(canvas.width - x, bw), h = Math.min(canvas.height - y, bh*0.85);
+  const k = Math.min(3, 1100 / Math.max(1, w));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w*k); c.height = Math.round(h*k);
+  const cx = c.getContext('2d');
+  cx.filter = 'grayscale(1) contrast(1.5)';
+  cx.drawImage(canvas, x, y, w, h, 0, 0, c.width, c.height);
+  // the OCR engine loads in the background; give it a few seconds if it is not ready yet
+  for (let i = 0; i < 40 && st.ocrState === 'loading'; i++) await new Promise(r => setTimeout(r, 250));
+  if (st.ocrState !== 'ready') {
+    p.plate = {status:'unavailable'};
+    if (st.pending === p) refreshPreview();
+    return;
+  }
+  let result = {status:'unread'};
+  try {
+    const job = st.ocr.recognize(c);
+    const r = await Promise.race([job, new Promise((_, rej) => setTimeout(() => rej('timeout'), 9000))]);
+    result = judgePlate(r.data);
+  } catch(_) { result = {status:'unread'}; }
+  p.plate = result;
+  if (st.pending === p) refreshPreview();
+}
+function judgePlate(data){
+  const want = normPlate(st.plate);
+  const words = (data.words || []).map(w => ({t: normPlate(w.text), c: w.confidence})).filter(w => w.t);
+  // a plate can be split into two words ("ABC" "1234"), so also test neighbours joined
+  const cands = [...words];
+  for (let i = 0; i < words.length - 1; i++) cands.push({t: words[i].t + words[i+1].t, c: Math.min(words[i].c, words[i+1].c)});
+  for (const w of cands) {
+    if (w.t.includes(want) || (Math.abs(w.t.length - want.length) <= 1 && lev(w.t, want) <= 1)) return {status:'match', text: w.t};
+  }
+  for (const w of cands) {
+    if (looksLikePlate(w.t) && w.c >= 75 && lev(w.t, want) >= 3) return {status:'mismatch', text: w.t};
+  }
+  return {status:'unread'};
 }
 
 /* ---------------- preview ---------------- */
 function lightOf(p){
   if (!p.baseline) return 'red';
+  if (p.plate?.status === 'reading') return 'wait';
+  if (p.plate?.status === 'mismatch' && p.plateWanted) return 'red';
+  if (p.plate?.status === 'match' && p.plateProbe) return 'red';   // read the plate on a "front" shot
   if (p.notes.length) return 'yellow';
+  if (p.plateWanted && p.plate && p.plate.status !== 'match') return 'yellow';
+  if (p.sharp < S.minSharp) return 'yellow';
   return p.aiPass ? 'green' : 'yellow';
+}
+function reasonsOf(p){
+  const r = [...p.failed];
+  if (p.notes.length) r.push('用戶備註：' + p.notes.join('、'));
+  if (p.plateWanted && p.plate?.status === 'unread') r.push('車牌無法辨識');
+  if (p.plateWanted && p.plate?.status === 'unavailable') r.push('車牌辨識未啟用');
+  if (p.plateWanted && p.plate?.status === 'mismatch') r.push(`車牌不符（讀到 ${p.plate.text}）`);
+  if (p.plateProbe && p.plate?.status === 'match') r.push('拍到車牌，應為車尾');
+  if (p.mode === 'manual') r.unshift('手動拍攝');
+  return r;
+}
+function plateLine(p){
+  if (!p.plate) return null;
+  const s = p.plate.status;
+  if (p.plateProbe) {
+    if (s === 'reading') return ['', '確認拍攝方向中…'];
+    if (s === 'match') return ['bad', `拍到車牌 ${st.plate}，這張應該是車尾。請走到「${p.corner}」（車頭那側）重拍。`];
+    return null;
+  }
+  if (s === 'reading') return ['', '車牌辨識中…'];
+  if (s === 'match') return ['match', `車牌相符（${st.plate}）`];
+  if (s === 'mismatch') return ['bad', `讀到車牌 ${p.plate.text}，與訂單車號 ${st.plate} 不符，請確認是否拍錯車。`];
+  if (s === 'unavailable') return ['unread', '車牌辨識元件未載入，將由專人確認車牌。'];
+  return ['unread', '車牌無法辨識，將由專人確認。可靠近一點讓車牌入鏡後重拍。'];
 }
 function openPreview(){
   const p = st.pending;
   $('pvTitle').textContent = p.corner;
-  $('pvSub').textContent = (p.mode === 'auto' ? 'AI 自動拍攝' : '手動拍攝') + '・' + fmtClock(p.time);
+  $('pvSub').textContent = (p.mode === 'auto' ? 'AI 自動連拍' : '手動連拍') + '・' + fmtClock(p.time);
   $('pvImg').src = p.url;
-  $('pvComment').textContent = p.comment;
   $('notes').innerHTML = NOTE_TAGS.map(t => `<button type="button" aria-pressed="false">${t}</button>`).join('');
   refreshPreview();
   show('preview');
@@ -685,12 +943,17 @@ $('notes').addEventListener('click', e => {
   refreshPreview();
 });
 function refreshPreview(){
-  const p = st.pending, l = lightOf(p), el = $('pvLight');
+  const p = st.pending; if (!p) return;
+  const l = lightOf(p), el = $('pvLight');
   el.className = 'light ' + l; el.querySelector('span').textContent = lightText(l);
+  $('pvComment').textContent = p.comment;
+  const pl = plateLine(p), line = $('pvPlate');
+  line.hidden = !pl;
+  if (pl) { line.className = 'plate-line ' + pl[0]; line.querySelector('span').textContent = pl[1]; }
   $('noteField').hidden = !p.baseline;
   const acc = $('acceptBtn');
-  acc.disabled = l === 'red';
-  acc.textContent = l === 'red' ? '未通過檢查，請重拍' : '完成此部位';
+  acc.disabled = l === 'red' || l === 'wait';
+  acc.textContent = l === 'wait' ? '檢查中…' : l === 'red' ? '未通過檢查，請重拍' : '完成此部位';
 }
 $('retakeBtn').addEventListener('click', () => {
   st.retakes[st.idx]++;
@@ -699,7 +962,7 @@ $('retakeBtn').addEventListener('click', () => {
 });
 $('acceptBtn').addEventListener('click', () => {
   const p = st.pending; if (!p) return;
-  p.light = lightOf(p); p.retakes = st.retakes[st.idx];
+  p.light = lightOf(p); p.reasons = reasonsOf(p); p.retakes = st.retakes[st.idx];
   st.shots[st.idx] = p; st.pending = null;
   const next = st.shots.findIndex(s => !s);
   if (next === -1) { say('四個角都拍好了，還車完成'); renderDone(); show('done'); return; }
@@ -710,7 +973,7 @@ $('acceptBtn').addEventListener('click', () => {
 });
 function backToCam(){
   updateCornerUI();
-  st.passSince = 0; st.prev = null; st.cooldownUntil = performance.now() + 1500;
+  st.progress = 0; st.box = null; st.prevBox = null; st.cooldownUntil = performance.now() + 1500;
   show('cam');
 }
 
@@ -728,7 +991,7 @@ function renderDone(){
       <b>還車照片已存證</b><span>本次租用的車況責任在此時間點結束</span>
     </div>
     <dl class="kv">
-      <dt>車號</dt><dd>DEMO-0001</dd>
+      <dt>車號</dt><dd>${esc(st.plate || '未設定')}</dd>
       <dt>車種</dt><dd>${TARGETS[st.target].label}</dd>
       <dt>存證時間</dt><dd>${fmtTime(last)}</dd>
       <dt>照片</dt><dd>4 張</dd>
@@ -760,13 +1023,21 @@ function renderBackoffice(onlyReview){
   ${list.length ? list.map(recCard).join('') : '<p class="note">這筆訂單沒有需要人工確認的照片。</p>'}`;
   $('onlyChk').addEventListener('change', e => renderBackoffice(e.target.checked));
 }
+function plateText(s){
+  if (!s.plateWanted) return '此部位不需比對';
+  const st2 = s.plate?.status;
+  return st2 === 'match' ? '相符' : st2 === 'mismatch' ? `不符（讀到 ${esc(s.plate.text)}）` : st2 === 'unavailable' ? '辨識未啟用' : '無法辨識';
+}
 function recCard(s){
+  const why = s.light === 'green' ? '' : `<dt>${s.light === 'yellow' ? '黃燈原因' : '紅燈原因'}</dt><dd class="why ${s.light}">${esc(s.reasons.join('、') || '—')}</dd>`;
   return `<article class="rec">
     <img src="${s.url}" alt="${s.corner}照片">
     <div class="body">
       <div class="top"><b>${s.corner}</b><span class="light ${s.light}"><i></i><span>${lightShort(s.light)}</span></span></div>
       <dl>
-        <dt>拍攝方式</dt><dd>${s.mode==='auto'?'AI 自動拍攝':'手動拍攝'}</dd>
+        ${why}
+        <dt>拍攝方式</dt><dd>${s.mode==='auto'?'AI 自動連拍':'手動連拍'}（${s.burst} 張取最清楚）</dd>
+        <dt>車牌比對</dt><dd>${st.plate ? plateText(s) : '未設定訂單車號'}</dd>
         <dt>AI 評語</dt><dd>${esc(s.comment)}</dd>
         <dt>用戶選擇</dt><dd>確認送出${s.retakes?`（重拍 ${s.retakes} 次）`:''}</dd>
         <dt>補充說明</dt><dd>${s.notes.length?esc(s.notes.join('、')):'無'}</dd>
@@ -794,7 +1065,8 @@ function bindSlider(id, out, key, fmt){
 }
 bindSlider('sBright','oBright','minBright', v => v);
 bindSlider('sSharp','oSharp','minSharp', v => v);
-bindSlider('sTurn','oTurn','turnDeg', v => v + '°');
+bindSlider('sShake','oShake','maxShake', v => v);
+bindSlider('sTurn','oTurn','turnMin', v => v + '°');
 $('compassChk').addEventListener('change', e => { S.useCompass = e.target.checked; });
 $('setBtn').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
 $('setClose').addEventListener('click', () => { $('settings').hidden = true; });
@@ -802,11 +1074,13 @@ function renderMetrics(a){
   const f = (x,d=0) => x == null || Number.isNaN(x) ? '—' : (+x).toFixed(d);
   const ref = st.idx > 0 ? st.shots[st.idx-1]?.heading : null;
   $('metrics').textContent =
-`鎖定  ${a.found ? f(a.score*100)+'%' : '無'}
+`鎖定  ${a.found ? f(a.score*100)+'%' : '框內無車'}
+大小  ${f(a.size,2)}（剛好 ${S.sizeMin}–${S.sizeMax}）
+偏移  左右 ${f(a.dx,2)}  上下 ${f(a.dy,2)}
 亮度  ${f(a.bright)}   清晰度 ${f(a.sharp)}
-占比  ${f(a.fill,2)}   中心 ${f(a.cx,2)}, ${f(a.cy,2)}
-穩定  ${a.steady ? '是' : '否'}   貼邊 ${a.edge ? '是' : '否'}
-方位  ${st.headingSeen ? f(st.heading)+'°' : '無感測器'}   上一角 ${ref == null ? '—' : f(ref)+'°'}`;
+晃動  ${st.motionSeen ? f(st.shake)+' 度/秒' : '無陀螺儀（改看框位移）'}
+方位  ${st.headingSeen ? f(st.heading)+'°' : '無感測器'}   上一角 ${ref == null ? '—' : f(ref)+'°'}   轉動 ${a.turn.deg == null ? '—' : f(a.turn.deg)+'°'}
+車牌  ${!st.plate ? '未設定' : st.ocrState === 'ready' ? '辨識元件就緒' : st.ocrState === 'loading' ? '辨識元件載入中' : '辨識元件載入失敗'}`;
 }
 
 updateCornerUI();
