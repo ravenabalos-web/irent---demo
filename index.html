@@ -225,7 +225,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
       <ol>
         <li><b>1</b><span>站在<span class="em">左前方</span>，把車放進取景框</span></li>
         <li><b>2</b><span>照箭頭和距離條調整，框變綠色就自動拍</span></li>
-        <li><b>3</b><span>順時針走到右前、右後、左後</span></li>
+        <li><b>3</b><span>順時針走到右前、右後、左後，最後拍腳踏板（汽車拍車內）</span></li>
       </ol>
     </div>
     <div class="card order">
@@ -303,6 +303,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
       <span class="k">AI 評語</span>
       <span id="pvComment"></span>
       <span class="plate-line" id="pvPlate" hidden><i></i><span></span></span>
+      <span class="plate-line" id="pvClean" hidden><i></i><span></span></span>
     </div>
     <div id="noteField">
       <div class="notes-k">補充說明（選填，點一下即可）</div>
@@ -351,7 +352,23 @@ const CORNERS = [
   {id:'RF', name:'右前', rear:false, move:'沿著車頭走到「右前」角'},
   {id:'RR', name:'右後', rear:true,  move:'沿著右側走到「右後」角'},
   {id:'LR', name:'左後', rear:true,  move:'沿著車尾走到「左後」角'},
+  {id:'IN', name:'腳踏板', rear:false, interior:true, move:'最後拍「腳踏板」：站在車側，由上往下拍整個腳踏板'},
 ];
+// The last shot depends on the vehicle: a scooter's footboard, or a car's cabin.
+const INTERIOR = {
+  motorcycle:{name:'腳踏板', move:'最後拍「腳踏板」：站在車側，由上往下拍整個腳踏板', hint:'把整個腳踏板放進畫面'},
+  car:{name:'車內', move:'最後拍「車內」：打開車門，拍下前座與後座', hint:'把前座與後座放進畫面'},
+};
+// COCO-SSD classes that count as items left behind, with the label shown to people
+const LITTER = {
+  'cup':'杯子','wine glass':'杯子','bottle':'瓶子','bowl':'碗','handbag':'袋子','backpack':'背包','suitcase':'行李箱',
+  'book':'書本或紙張','cell phone':'手機','umbrella':'雨傘','banana':'食物','apple':'食物','orange':'食物','sandwich':'食物',
+  'donut':'食物','cake':'食物','pizza':'食物','hot dog':'食物','broccoli':'食物','carrot':'食物','fork':'餐具','spoon':'餐具',
+  'knife':'刀具','scissors':'剪刀','toothbrush':'牙刷','sports ball':'球','remote':'遙控器','teddy bear':'玩偶','tie':'衣物',
+  'laptop':'筆電','mouse':'滑鼠','keyboard':'鍵盤','frisbee':'雜物','kite':'雜物','bird':'雜物',
+};
+const cleanLevel = n => n === 0 ? '乾淨' : n === 1 ? '普通' : '髒污';
+const isInterior = () => !!CORNERS[st.idx]?.interior;
 const TARGETS = {
   motorcycle:{label:'機車', classes:['motorcycle'], aspect:1.25, plateOnFront:false},
   car:{label:'汽車', classes:['car','truck','bus'], aspect:1.7, plateOnFront:true},
@@ -369,7 +386,7 @@ const S = {
 /* ---------------- state ---------------- */
 const st = {
   target:'motorcycle', voice:true, plate:'', model:null, ocr:null, ocrState:'off', stream:null,
-  phase:'start', idx:0, shots:[null,null,null,null], retakes:[0,0,0,0],
+  phase:'start', idx:0, shots:[null,null,null,null,null], retakes:[0,0,0,0,0], litter:[],
   a:null, box:null, boxSeenAt:0, prevBox:null, progress:0, lastTick:0, cooldownUntil:0, camEnteredAt:0,
   heading:null, headingSeen:false, compassMissing:false, shake:null, motionSeen:false,
   pending:null, instr:'', instrSince:0, spoken:'', spokenAt:0,
@@ -447,7 +464,8 @@ async function initOcr(){
 }
 
 function resetRun(){
-  st.idx = 0; st.shots = [null,null,null,null]; st.retakes = [0,0,0,0];
+  Object.assign(CORNERS[4], INTERIOR[st.target]);
+  st.idx = 0; st.shots = [null,null,null,null,null]; st.retakes = [0,0,0,0,0]; st.litter = [];
   st.progress = 0; st.cooldownUntil = performance.now() + 800; st.box = null; st.prevBox = null;
   st.spoken = ''; st.instr = '';
   updateCornerUI();
@@ -486,7 +504,7 @@ const signedDiff = (p,q) => ((p - q + 540) % 360) - 180;
 
 function turnState(){
   const i = st.idx;
-  if (i === 0) return {need:false};
+  if (i === 0 || CORNERS[i].interior) return {need:false};
   const ref = st.shots[i-1]?.heading;
   if (!S.useCompass || !st.headingSeen || ref == null || st.heading == null) return {need:false, skipped:true};
   const deg = signedDiff(st.heading, ref);
@@ -560,7 +578,25 @@ async function detectLoop(){
   st._detecting = false;
 }
 
+// Footboard / cabin shot: no vehicle frame; check light and steadiness, and look for items left behind.
+function analyzeInterior(preds){
+  const now = performance.now(), M = viewMap();
+  st.litter = preds.filter(p => LITTER[p.class] && p.score >= 0.4).map(p => ({label: LITTER[p.class], score: p.score, r: toScreen(p.bbox, M)}));
+  const a = {interior:true, found:true, score:0, turn:{need:false}, items: st.litter.length};
+  Object.assign(a, measure($('video'), ...toVideo({x:0, y:0, w:M.cw, h:M.ch}, M)));
+  a.steady = st.motionSeen ? st.shake <= S.maxShake : true;
+  $('sensorNote').hidden = true;
+  a.checks = {
+    light:  {name:'光線', ok: a.bright >= S.minBright && a.bright <= S.maxBright},
+    steady: {name:'手機穩定', ok: !!a.steady},
+  };
+  a.pass = Object.values(a.checks).every(c => c.ok);
+  st.a = a;
+  tick(a, now);
+}
+
 function analyze(preds){
+  if (isInterior()) return analyzeInterior(preds);
   const now = performance.now(), M = viewMap(), G = guideRect();
   const classes = TARGETS[st.target].classes;
   // Only vehicles that sit in the aiming frame count; background cars and metal are ignored.
@@ -619,6 +655,12 @@ function checksOf(a){
 
 function instructionOf(a){
   const lbl = TARGETS[st.target].label, c = a.checks, corner = CORNERS[st.idx], t = a.turn;
+  if (a.interior) {
+    if (a.bright < S.minBright) return '光線太暗，請開手電筒或靠近光源';
+    if (a.bright > S.maxBright) return '畫面過亮，換個角度避開強光';
+    if (!c.steady.ok) return '拿穩手機，不要晃動';
+    return a.items ? `偵測到 ${a.items} 個物品，保持不動…` : `${corner.hint}，保持不動…`;
+  }
   if (t.need && !t.ok) {
     if (t.why === 'reverse') return `方向反了，請往另一邊走。${corner.move}`;
     if (t.why === 'over') return `好像走過頭了，請退回「${corner.name}」角`;
@@ -643,7 +685,8 @@ function tick(a, now){
   if (!$('settings').hidden) renderMetrics(a);
   if (now < st.cooldownUntil) { st.progress = 0; return; }
   // A short wobble only drains the ring a little; losing the vehicle drains it fast.
-  if (a.pass) st.progress += dt / S.fillTime;
+  // the footboard/cabin shot has no vehicle to lock onto, so it waits longer before firing
+  if (a.pass) st.progress += dt / (a.interior ? 1.3 : S.fillTime);
   else st.progress -= dt / (a.found ? S.drainTime : S.drainTime/3);
   st.progress = Math.max(0, Math.min(1, st.progress));
   if (st.progress >= 1) { st.progress = 0; capture('auto'); }
@@ -674,8 +717,8 @@ function renderChips(a){
 const distPos = s => Math.max(0, Math.min(100, (s - 0.3) / 1.1 * 100));
 function renderDist(a){
   const el = $('dist');
-  el.hidden = !a.found;
-  if (!a.found) return;
+  el.hidden = !a.found || !!a.interior;
+  if (el.hidden) return;
   $('distZone').style.left = distPos(S.sizeMin) + '%';
   $('distZone').style.width = (distPos(S.sizeMax) - distPos(S.sizeMin)) + '%';
   $('distDot').style.left = distPos(a.edge ? Math.max(a.size, 1.3) : a.size) + '%';
@@ -695,6 +738,7 @@ function drawLoop(){
   const stg = $('stage'), W = stg.clientWidth, H = stg.clientHeight, G = guideRect(), a = st.a;
   octx.clearRect(0,0,W,H);
   const ready = !!a?.pass;
+  if (isInterior()) { drawInterior(W, H, ready); requestAnimationFrame(drawLoop); return; }
   // dim everything outside the frame so the frame reads as "put it here"
   octx.save();
   octx.fillStyle = '#00000059';
@@ -704,14 +748,14 @@ function drawLoop(){
   if (a?.found && st.box) {
     const r = st.box;
     octx.save(); octx.strokeStyle = '#ffffff66'; octx.lineWidth = 1.5; octx.setLineDash([4,4]);
-    roundRectPath(r.x, r.y, r.w, r.h, 6); octx.stroke(); octx.restore();
+    octx.beginPath(); roundRectPath(r.x, r.y, r.w, r.h, 6); octx.stroke(); octx.restore();
   }
   // the fixed aiming frame
   octx.save();
   octx.lineWidth = ready ? 4 : 2.5;
   octx.strokeStyle = ready ? GO : '#ffffff';
   if (!ready && !a?.found) octx.setLineDash([10,8]);
-  roundRectPath(G.x, G.y, G.w, G.h, 14); octx.stroke();
+  octx.beginPath(); roundRectPath(G.x, G.y, G.w, G.h, 14); octx.stroke();
   octx.restore();
   corners(G, ready ? GO : '#ffffff');
   // direction arrows, longer when further off
@@ -728,6 +772,33 @@ function drawLoop(){
     octx.beginPath(); octx.arc(cx, cy, 30, -Math.PI/2, -Math.PI/2 + st.progress*Math.PI*2); octx.stroke();
   }
   requestAnimationFrame(drawLoop);
+}
+function drawInterior(W, H, ready){
+  // full-frame border that turns green when ready
+  const pad = 14, G = {x:pad, y:pad + 50, w:W - pad*2, h:H - pad*2 - 150};
+  octx.save(); octx.lineWidth = ready ? 4 : 2; octx.strokeStyle = ready ? GO : '#ffffffb0';
+  if (!ready) octx.setLineDash([10,8]);
+  octx.beginPath(); roundRectPath(G.x, G.y, G.w, G.h, 14); octx.stroke(); octx.restore();
+  corners(G, ready ? GO : '#ffffff');
+  // items the AI found, in amber with a label
+  octx.save();
+  octx.font = '600 13px ' + getComputedStyle(document.body).fontFamily;
+  for (const it of st.litter) {
+    const r = it.r;
+    octx.strokeStyle = '#f0a000'; octx.lineWidth = 3;
+    octx.beginPath(); roundRectPath(r.x, r.y, r.w, r.h, 6); octx.stroke();
+    const t = it.label, tw = octx.measureText(t).width + 12, ty = Math.max(G.y, r.y - 22);
+    octx.fillStyle = '#f0a000'; octx.beginPath(); roundRectPath(r.x, ty, tw, 20, 6); octx.fill();
+    octx.fillStyle = '#1f2328'; octx.fillText(t, r.x + 6, ty + 14);
+  }
+  octx.restore();
+  if (st.progress > 0.01) {
+    const cx = W/2, cy = G.y + G.h/2;
+    octx.lineWidth = 6; octx.strokeStyle = '#ffffff55';
+    octx.beginPath(); octx.arc(cx, cy, 30, 0, Math.PI*2); octx.stroke();
+    octx.strokeStyle = GO; octx.lineCap = 'round';
+    octx.beginPath(); octx.arc(cx, cy, 30, -Math.PI/2, -Math.PI/2 + st.progress*Math.PI*2); octx.stroke();
+  }
 }
 function roundRectPath(x,y,w,h,r){ octx.moveTo(x+r,y); octx.arcTo(x+w,y,x+w,y+h,r); octx.arcTo(x+w,y+h,x,y+h,r); octx.arcTo(x,y+h,x,y,r); octx.arcTo(x,y,x+w,y,r); octx.closePath(); }
 function corners(G, col){
@@ -768,7 +839,7 @@ const lightShort = l => l === 'green' ? '綠燈' : l === 'yellow' ? '黃燈' : '
 
 function updateCornerUI(){
   const c = CORNERS[st.idx];
-  $('camSub').textContent = `請拍攝車輛四角（${c.name} ${st.idx+1} / 4）`;
+  $('camSub').textContent = c.interior ? `請拍攝${c.name}（${st.idx+1} / ${CORNERS.length}）` : `請拍攝車輛四角（${c.name} ${st.idx+1} / ${CORNERS.length}）`;
   $('strip').innerHTML = CORNERS.map((k, i) => {
     const s = st.shots[i], cur = i === st.idx;
     return `<div class="tile ${cur?'cur':''} ${s?'has':''}">${s ? `<img src="${s.url}" alt=""><i style="background:${lightColor(s.light)}"></i>` : ''}<span>${k.name}</span></div>`;
@@ -782,7 +853,8 @@ async function capture(mode){
   if (st.phase !== 'cam') return;
   const v = $('video'); if (!v.videoWidth) return;
   const a = st.a || {checks:{}, found:false, bright:0, turn:{need:false}};
-  const M = viewMap(), G = guideRect(), region = toVideo(G, M);
+  const M = viewMap(), G = guideRect(), interior = isInterior();
+  const region = interior ? toVideo({x:0, y:0, w:M.cw, h:M.ch}, M) : toVideo(G, M);
   const box = st.box ? toVideo(st.box, M) : null;
   st.phase = 'capturing';
   $('manualBtn').disabled = true;
@@ -803,22 +875,64 @@ async function capture(mode){
   let hash = '（此瀏覽器無法計算）';
   try { const buf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()); hash = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join(''); } catch(_) {}
   const corner = CORNERS[st.idx], tgt = TARGETS[st.target];
-  const plateWanted = !!st.plate && (corner.rear || tgt.plateOnFront);
-  const plateProbe = !!st.plate && !tgt.plateOnFront && !corner.rear;   // front of a scooter: a readable plate means wrong side
+  const plateWanted = !interior && !!st.plate && (corner.rear || tgt.plateOnFront);
+  const plateProbe = !interior && !!st.plate && !tgt.plateOnFront && !corner.rear;   // front of a scooter: a readable plate means wrong side
   const p = {
     corner: corner.name, cornerRear: corner.rear, mode, url: URL.createObjectURL(blob), hash, burst: n,
     time: new Date(), heading: st.heading, aiPass: !!a.pass, found: !!a.found, bright: a.bright,
     sharp: best.m.sharp, failed: Object.values(a.checks).filter(x => x.ok === false).map(x => x.name),
     notes: [], baseline: !!a.found && a.bright >= 15,
     plate: (plateWanted || plateProbe) && a.found ? {status: (st.ocrState === 'ready' || st.ocrState === 'loading') ? 'reading' : 'unavailable'} : null,
-    plateWanted, plateProbe,
+    plateWanted, plateProbe, interior,
   };
   if (p.sharp < S.minSharp) p.failed.push('清晰度');
-  p.comment = commentOf(a, p);
+  if (interior) {
+    p.baseline = a.bright >= 15;
+    await findItems(p, best.c);
+  }
+  p.comment = interior ? interiorComment(a, p) : commentOf(a, p);
   st.pending = p;
   say('已拍下');
   openPreview();
   if (p.plate && p.plate.status === 'reading') readPlate(p, best.c, box);
+}
+
+// Look for items left behind in the chosen frame; keep the original photo untouched and
+// make a separate marked-up copy for viewing only.
+async function findItems(p, canvas){
+  let preds = [];
+  try { preds = await st.model.detect(canvas, 20, 0.4); } catch(_) {}
+  p.items = preds.filter(x => LITTER[x.class]).map(x => ({label: LITTER[x.class], score: x.score, bbox: x.bbox}));
+  p.clean = cleanLevel(p.items.length);
+  if (!p.items.length) return;
+  const c = document.createElement('canvas');
+  c.width = canvas.width; c.height = canvas.height;
+  const cx = c.getContext('2d');
+  cx.drawImage(canvas, 0, 0);
+  const lw = Math.max(4, c.width/250), fs = Math.max(22, c.width/36);
+  cx.font = `700 ${fs}px ` + getComputedStyle(document.body).fontFamily;
+  for (const it of p.items) {
+    const [x, y, w, h] = it.bbox;
+    cx.strokeStyle = '#f0a000'; cx.lineWidth = lw; cx.strokeRect(x, y, w, h);
+    const tw = cx.measureText(it.label).width + fs*0.6, ty = Math.max(0, y - fs*1.4);
+    cx.fillStyle = '#f0a000'; cx.fillRect(x, ty, tw, fs*1.4);
+    cx.fillStyle = '#1f2328'; cx.fillText(it.label, x + fs*0.3, ty + fs*1.05);
+  }
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+  p.annotUrl = URL.createObjectURL(blob);
+}
+const itemSummary = items => {
+  const n = {}; for (const it of items) n[it.label] = (n[it.label] || 0) + 1;
+  return Object.entries(n).map(([k, v]) => `${k} ${v} 個`).join('、');
+};
+function interiorComment(a, p){
+  if (a.bright < 15) return '畫面幾乎全黑，請重拍。';
+  const issues = [];
+  if (a.bright < S.minBright) issues.push('偏暗');
+  if (a.bright > S.maxBright) issues.push('過亮或反光');
+  if (p.sharp < S.minSharp) issues.push('可能有些模糊');
+  const q = issues.length ? `這張${issues.join('、')}。` : '照片清晰。';
+  return q + `已從 ${p.burst} 張連拍中挑出最清楚的一張。`;
 }
 
 function commentOf(a, p){
@@ -929,7 +1043,7 @@ function openPreview(){
   const p = st.pending;
   $('pvTitle').textContent = p.corner;
   $('pvSub').textContent = (p.mode === 'auto' ? 'AI 自動連拍' : '手動連拍') + '・' + fmtClock(p.time);
-  $('pvImg').src = p.url;
+  $('pvImg').src = p.annotUrl || p.url;
   $('notes').innerHTML = NOTE_TAGS.map(t => `<button type="button" aria-pressed="false">${t}</button>`).join('');
   refreshPreview();
   show('preview');
@@ -950,6 +1064,15 @@ function refreshPreview(){
   const pl = plateLine(p), line = $('pvPlate');
   line.hidden = !pl;
   if (pl) { line.className = 'plate-line ' + pl[0]; line.querySelector('span').textContent = pl[1]; }
+  const cl = $('pvClean');
+  cl.hidden = !p.interior || !p.baseline;
+  if (!cl.hidden) {
+    const n = p.items.length;
+    cl.className = 'plate-line ' + (n === 0 ? 'match' : n === 1 ? 'unread' : 'bad');
+    cl.querySelector('span').textContent = n === 0
+      ? `整潔：${p.clean}（未偵測到遺留物）`
+      : `AI 偵測到：${itemSummary(p.items)}（整潔：${p.clean}）。若是您留下的物品，請帶走後按「重拍」。`;
+  }
   $('noteField').hidden = !p.baseline;
   const acc = $('acceptBtn');
   acc.disabled = l === 'red' || l === 'wait';
@@ -957,7 +1080,7 @@ function refreshPreview(){
 }
 $('retakeBtn').addEventListener('click', () => {
   st.retakes[st.idx]++;
-  URL.revokeObjectURL(st.pending.url); st.pending = null;
+  URL.revokeObjectURL(st.pending.url); if (st.pending.annotUrl) URL.revokeObjectURL(st.pending.annotUrl); st.pending = null;
   backToCam();
 });
 $('acceptBtn').addEventListener('click', () => {
@@ -965,7 +1088,7 @@ $('acceptBtn').addEventListener('click', () => {
   p.light = lightOf(p); p.reasons = reasonsOf(p); p.retakes = st.retakes[st.idx];
   st.shots[st.idx] = p; st.pending = null;
   const next = st.shots.findIndex(s => !s);
-  if (next === -1) { say('四個角都拍好了，還車完成'); renderDone(); show('done'); return; }
+  if (next === -1) { say('全部拍好了，還車完成'); renderDone(); show('done'); return; }
   st.idx = next;
   say(CORNERS[next].move || ('請拍' + CORNERS[next].name));
   st.spoken = ''; st.spokenAt = performance.now();
@@ -973,7 +1096,8 @@ $('acceptBtn').addEventListener('click', () => {
 });
 function backToCam(){
   updateCornerUI();
-  st.progress = 0; st.box = null; st.prevBox = null; st.cooldownUntil = performance.now() + 1500;
+  st.progress = 0; st.box = null; st.prevBox = null; st.litter = [];
+  st.cooldownUntil = performance.now() + (isInterior() ? 2500 : 1500);
   show('cam');
 }
 
@@ -994,7 +1118,7 @@ function renderDone(){
       <dt>車號</dt><dd>${esc(st.plate || '未設定')}</dd>
       <dt>車種</dt><dd>${TARGETS[st.target].label}</dd>
       <dt>存證時間</dt><dd>${fmtTime(last)}</dd>
-      <dt>照片</dt><dd>4 張</dd>
+      <dt>照片</dt><dd>${shots.length} 張</dd>
     </dl>
     <div class="grid4">${shots.map(s => `
       <div class="thumb"><img src="${s.url}" alt="${s.corner}照片"><span class="tag"><i style="background:${lightColor(s.light)}"></i>${s.corner}</span></div>`).join('')}
@@ -1031,13 +1155,13 @@ function plateText(s){
 function recCard(s){
   const why = s.light === 'green' ? '' : `<dt>${s.light === 'yellow' ? '黃燈原因' : '紅燈原因'}</dt><dd class="why ${s.light}">${esc(s.reasons.join('、') || '—')}</dd>`;
   return `<article class="rec">
-    <img src="${s.url}" alt="${s.corner}照片">
+    <img src="${s.annotUrl || s.url}" alt="${s.corner}照片">
     <div class="body">
       <div class="top"><b>${s.corner}</b><span class="light ${s.light}"><i></i><span>${lightShort(s.light)}</span></span></div>
       <dl>
         ${why}
         <dt>拍攝方式</dt><dd>${s.mode==='auto'?'AI 自動連拍':'手動連拍'}（${s.burst} 張取最清楚）</dd>
-        <dt>車牌比對</dt><dd>${st.plate ? plateText(s) : '未設定訂單車號'}</dd>
+        ${s.interior ? `<dt>整潔分類</dt><dd>${s.clean}${s.items.length ? `（${esc(itemSummary(s.items))}）` : ''}</dd>` : `<dt>車牌比對</dt><dd>${st.plate ? plateText(s) : '未設定訂單車號'}</dd>`}
         <dt>AI 評語</dt><dd>${esc(s.comment)}</dd>
         <dt>用戶選擇</dt><dd>確認送出${s.retakes?`（重拍 ${s.retakes} 次）`:''}</dd>
         <dt>補充說明</dt><dd>${s.notes.length?esc(s.notes.join('、')):'無'}</dd>
@@ -1054,7 +1178,7 @@ function tab(w){
   $('paneR').hidden = w !== 'R'; $('paneB').hidden = w !== 'B';
 }
 $('restartBtn').addEventListener('click', () => {
-  st.shots.forEach(s => s && URL.revokeObjectURL(s.url));
+  st.shots.forEach(s => { if (s) { URL.revokeObjectURL(s.url); if (s.annotUrl) URL.revokeObjectURL(s.annotUrl); } });
   tab('R'); resetRun(); show('cam');
 });
 
