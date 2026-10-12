@@ -193,15 +193,99 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
 .rec .hash{font-family:var(--mono);font-size:11px;color:var(--sub)}
 .limits{font-size:12px;color:var(--sub)}
 .limits ul{margin:4px 0 0;padding-left:18px}
+/* ---------- home ---------- */
+#home .page{gap:18px}
+.home-hero{display:grid;gap:6px;padding-top:6px}
+.home-hero .eyebrow{font-size:12px;font-weight:600;color:var(--red);letter-spacing:.04em}
+.home-hero h2{margin:0;font-size:22px;font-weight:700}
+.home-hero p{margin:0;color:var(--sub);font-size:14px}
+.entry{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;text-align:left;background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 3px #1f232810;width:100%}
+.entry .ic{width:52px;height:52px;border-radius:12px;background:var(--red-soft);display:grid;place-items:center}
+.entry .ic svg{width:28px;height:28px}
+.entry b{display:block;font-size:17px}
+.entry span{font-size:13px;color:var(--sub)}
+.entry .go{color:var(--hint);font-size:20px}
+.entry:disabled{opacity:.5;cursor:not-allowed}
+.entry .state{display:inline-block;margin-top:4px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--field);color:var(--sub)}
+.entry .state.ready{background:#e7f6ee;color:var(--ok)}
+.rules{background:var(--card);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--sub);box-shadow:0 1px 3px #1f232810}
+.rules b{color:var(--ink);font-size:14px}
+.rules ol{margin:8px 0 0;padding-left:20px;display:grid;gap:4px}
+.nav .back{width:40px;height:32px;display:grid;place-items:center}
+.nav .back svg{width:22px;height:22px}
+
+/* ---------- pickup ---------- */
+.pick-tip{background:#e7f6ee;color:#0e6b3b;border-radius:10px;padding:10px 12px;font-size:13.5px}
+.pick-meta{display:flex;justify-content:space-between;font-size:13px;color:var(--sub)}
+.pcard{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px #1f232810}
+.pcard .ph{position:relative;display:block;width:100%;padding:0;aspect-ratio:4/3;background:#000}
+.pcard .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.pcard .ph .zoom{position:absolute;right:8px;bottom:8px;font-size:12px;color:#fff;background:#000a;border-radius:999px;padding:2px 9px}
+.pcard .bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px}
+.pcard .bar b{font-size:16px}
+.choice{display:flex;gap:8px}
+.choice button{padding:7px 14px;border-radius:999px;font-size:14px;font-weight:600;border:1.5px solid var(--line);color:var(--sub);background:var(--card)}
+.choice button.same[aria-pressed="true"]{border-color:var(--ok);background:#e7f6ee;color:var(--ok)}
+.choice button.diff[aria-pressed="true"]{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+.diffbox{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;margin:0 12px 12px;padding:8px;border-radius:10px;background:var(--red-soft);font-size:13px}
+.diffbox img{width:72px;height:72px;object-fit:cover;border-radius:8px;background:#000}
+.diffbox .redo{color:var(--red);font-weight:600;font-size:13px;padding:0;margin-top:2px}
+.sticky-foot{position:sticky;bottom:0;background:linear-gradient(#f4f5f700,var(--ground) 30%);padding-top:14px;display:grid;gap:6px}
+.sticky-foot .hint{font-size:12px;color:var(--sub);text-align:center}
+#lightbox{position:fixed;inset:0;background:#000e;display:grid;place-items:center;z-index:20;padding:16px}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+#lightbox span{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;color:#fff;font-size:15px}
+.types{display:flex;flex-wrap:wrap;gap:8px}
+.types button{padding:6px 14px;border-radius:999px;background:var(--field);font-size:14px;color:var(--sub);border:1.5px solid transparent}
+.types button[aria-pressed="true"]{border-color:var(--red);color:var(--red);background:var(--red-soft);font-weight:600}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pair figure{margin:0;display:grid;gap:3px}
+.pair img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;background:#000}
+.pair figcaption{font-size:11.5px;color:var(--sub)}
+.resp{font-size:12.5px;border-radius:8px;padding:8px 10px;background:var(--field)}
+.resp.warn{background:#fff4dc;color:#7a5200}
+
 @media (prefers-reduced-motion:reduce){.flash.go{animation:none}.dist .dot{transition:none}}
 </style>
 </head>
 <body>
 
-<!-- ============ START ============ -->
-<section id="start" class="screen">
+<!-- ============ HOME ============ -->
+<section id="home" class="screen">
   <header class="nav">
-    <span></span><h1>車身拍照</h1><span></span>
+    <span></span><h1>iRent 智能車況管家</h1><span></span>
+  </header>
+  <div class="page">
+    <div class="home-hero">
+      <span class="eyebrow">HoTai Hackathon · Demo</span>
+      <h2>還車照，就是下一位的取車標準</h2>
+      <p>先以前一位用戶身分還車，再以下一位用戶身分取車，看看照片怎麼接力。</p>
+    </div>
+    <button class="entry" id="goReturn" type="button">
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#d7000f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+      <span><b>還車</b><span>前一位用戶：AI 引導拍攝四角與腳踏板</span><br><span class="state" id="retState">尚未還車</span></span>
+      <span class="go">›</span>
+    </button>
+    <button class="entry" id="goPickup" type="button" disabled>
+      <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#d7000f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg></span>
+      <span><b>取車</b><span>下一位用戶：看一眼確認車況</span><br><span class="state" id="pickState">需先完成還車</span></span>
+      <span class="go">›</span>
+    </button>
+    <div class="rules">
+      <b>Demo 使用規則</b>
+      <ol>
+        <li>請<b>先還車、再取車</b>。取車時看到的標準照，就是剛剛還車拍的照片。</li>
+        <li>資料只存在這次開啟的網頁中，<b>請勿重新整理或關閉分頁</b>，也盡量不要切換到其他 App，否則需要重新還車。</li>
+        <li>實際營運時，還車照片經後台確認後才開放下一位取車；Demo 為方便展示，還車完成即可取車。</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ START ============ -->
+<section id="start" class="screen" hidden>
+  <header class="nav">
+    <button class="back" type="button" data-home aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none" stroke="#1f2328" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h1>車身拍照</h1><span></span>
     <div class="track"></div><div class="bar" style="width:20%"></div>
   </header>
   <div class="page">
@@ -245,7 +329,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
     </div>
     <div class="start-foot">
       <div id="startMsg" role="status"></div>
-      <button class="btn-red" id="startBtn" type="button">開始拍照</button>
+      <button class="btn-red" id="startBtn" type="button">開始還車拍照</button>
       <p class="fine">Demo 版本：辨識在手機上進行，照片不會上傳，關閉頁面即清除。</p>
     </div>
   </div>
@@ -329,12 +413,69 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--red);outline-of
   <div class="page">
     <div id="paneR"></div>
     <div id="paneB" hidden></div>
-    <button class="btn-red" id="restartBtn" type="button">重新拍一次</button>
+    <button class="btn-red" type="button" data-home>回首頁，換下一位取車</button>
+    <button class="btn-text" id="restartBtn" type="button">重新還車一次</button>
     <div class="limits">此 Demo 尚未包含：
       <ul><li>部位辨識模型（目前以車牌與方向感測器推斷方位，左前與右前仍可能混淆）</li><li>無訊號暫存與背景上傳</li></ul>
     </div>
   </div>
 </section>
+
+<!-- ============ PICKUP ============ -->
+<section id="pickup" class="screen" hidden>
+  <header class="nav">
+    <button class="back" type="button" data-home aria-label="回首頁"><svg viewBox="0 0 24 24" fill="none" stroke="#1f2328" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button><h1>取車確認</h1><span></span>
+    <div class="track"></div><div class="bar" id="pickBar" style="width:0%"></div>
+  </header>
+  <div class="page">
+    <div class="pick-tip">以下是前一位用戶的還車照片，也就是本次取車的標準照。<b>標準照片中看得到的損傷，不會算在您身上。</b></div>
+    <div class="pick-meta"><span id="pickPlate"></span><span id="pickTime"></span></div>
+    <div id="pickList" style="display:grid;gap:12px"></div>
+    <div class="sticky-foot">
+      <div class="hint" id="pickHint">請逐項確認，每一項按「相符」或「不一樣」</div>
+      <button class="btn-red" id="pickConfirm" type="button" disabled>確認取車</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REPORT (difference photo) ============ -->
+<section id="report" class="screen" hidden>
+  <div class="cam-top">
+    <span></span><div><div class="t">回報差異</div><div class="s" id="rpSub"></div></div><span></span>
+  </div>
+  <div class="pv-photo"><img id="rpImg" alt="差異處照片"></div>
+  <div class="sheet">
+    <div class="head"><b id="rpTitle"></b></div>
+    <div id="rpAi" class="ai" hidden><span class="k">AI 比對（與標準照相比）</span><span id="rpAiText"></span></div>
+    <div>
+      <div class="notes-k">差異類型（必選）</div>
+      <div class="types" id="rpTypes"></div>
+    </div>
+    <div class="pv-actions">
+      <button class="btn-text" id="rpRetake" type="button">重拍</button>
+      <button class="btn-red" id="rpOk" type="button" disabled>送出回報</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PICKUP DONE ============ -->
+<section id="pickdone" class="screen" hidden>
+  <header class="nav">
+    <span></span><h1>取車完成</h1><span></span>
+    <div class="track"></div><div class="bar" style="width:100%"></div>
+  </header>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="ptabU" aria-selected="true">取車紀錄</button>
+    <button type="button" role="tab" id="ptabB" aria-selected="false">後台：取車回報</button>
+  </div>
+  <div class="page">
+    <div id="ppaneU" style="display:grid;gap:12px"></div>
+    <div id="ppaneB" style="display:grid;gap:12px" hidden></div>
+    <button class="btn-red" type="button" data-home>回首頁</button>
+  </div>
+</section>
+
+<div id="lightbox" hidden><img alt="放大檢視"><span>點一下關閉</span></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
@@ -390,6 +531,9 @@ const st = {
   a:null, box:null, boxSeenAt:0, prevBox:null, progress:0, lastTick:0, cooldownUntil:0, camEnteredAt:0,
   heading:null, headingSeen:false, compassMissing:false, shake:null, motionSeen:false,
   pending:null, instr:'', instrSince:0, spoken:'', spokenAt:0,
+  flow:'return',      // 'return' = 還車拍照, 'diff' = 取車時拍差異處
+  baseline:null,      // the last finished return: becomes the next pickup's standard photos
+  pick:null, diffIdx:null, report:null, pickedAt:null,
 };
 
 /* ---------------- start screen ---------------- */
@@ -436,7 +580,11 @@ $('startBtn').addEventListener('click', async () => {
   show('cam');
   btn.disabled = false;
 });
-$('closeBtn').addEventListener('click', () => { try { speechSynthesis.cancel(); } catch(_) {} show('start'); });
+$('closeBtn').addEventListener('click', () => {
+  try { speechSynthesis.cancel(); } catch(_) {}
+  if (st.flow === 'diff') { st.flow = 'return'; renderPickup(); show('pickup'); }
+  else show('start');
+});
 
 /* ---------------- model loading with on-device cache ---------------- */
 async function loadDetector(report){
@@ -465,6 +613,7 @@ async function initOcr(){
 
 function resetRun(){
   Object.assign(CORNERS[4], INTERIOR[st.target]);
+  $('platePill').textContent = st.plate ? `車號：${st.plate}` : '車號：未設定（略過比對）';
   st.idx = 0; st.shots = [null,null,null,null,null]; st.retakes = [0,0,0,0,0]; st.litter = [];
   st.progress = 0; st.cooldownUntil = performance.now() + 800; st.box = null; st.prevBox = null;
   st.spoken = ''; st.instr = '';
@@ -473,8 +622,8 @@ function resetRun(){
 
 function show(name){
   st.phase = name;
-  for (const s of ['start','cam','preview','done']) $(s).hidden = s !== name;
-  document.querySelector('meta[name=theme-color]').content = (name === 'cam' || name === 'preview') ? '#000000' : '#ffffff';
+  for (const s of ['home','start','cam','preview','done','pickup','report','pickdone']) $(s).hidden = s !== name;
+  document.querySelector('meta[name=theme-color]').content = ['cam','preview','report'].includes(name) ? '#000000' : '#ffffff';
   if (name === 'cam') {
     st.camEnteredAt = performance.now(); st.lastTick = 0;
     $('manualBtn').disabled = false;
@@ -595,7 +744,26 @@ function analyzeInterior(preds){
   tick(a, now);
 }
 
+// Pickup "不一樣": free framing, manual shutter; on the footboard also look for items.
+function analyzeDiff(preds){
+  const now = performance.now(), M = viewMap();
+  const foot = !!CORNERS[st.diffIdx]?.interior;
+  st.litter = foot ? preds.filter(p => LITTER[p.class] && p.score >= 0.4).map(p => ({label: LITTER[p.class], score: p.score, r: toScreen(p.bbox, M)})) : [];
+  const a = {diff:true, interior:true, found:true, score:0, turn:{need:false}, items: st.litter.length};
+  Object.assign(a, measure($('video'), ...toVideo({x:0, y:0, w:M.cw, h:M.ch}, M)));
+  a.steady = st.motionSeen ? st.shake <= S.maxShake : true;
+  $('sensorNote').hidden = true;
+  a.checks = {
+    light:  {name:'光線', ok: a.bright >= S.minBright && a.bright <= S.maxBright},
+    steady: {name:'手機穩定', ok: !!a.steady},
+  };
+  a.pass = Object.values(a.checks).every(c => c.ok);
+  st.a = a;
+  tick(a, now);
+}
+
 function analyze(preds){
+  if (st.flow === 'diff') return analyzeDiff(preds);
   if (isInterior()) return analyzeInterior(preds);
   const now = performance.now(), M = viewMap(), G = guideRect();
   const classes = TARGETS[st.target].classes;
@@ -655,6 +823,10 @@ function checksOf(a){
 
 function instructionOf(a){
   const lbl = TARGETS[st.target].label, c = a.checks, corner = CORNERS[st.idx], t = a.turn;
+  if (a.diff) {
+    if (a.bright < S.minBright) return '光線太暗，請靠近光源再拍';
+    return '對準不一樣的地方，按下方快門拍攝';
+  }
   if (a.interior) {
     if (a.bright < S.minBright) return '光線太暗，請開手電筒或靠近光源';
     if (a.bright > S.maxBright) return '畫面過亮，換個角度避開強光';
@@ -683,6 +855,7 @@ function tick(a, now){
   setInstr(instructionOf(a), a.pass);
   renderChips(a); renderDist(a);
   if (!$('settings').hidden) renderMetrics(a);
+  if (a.diff) { st.progress = 0; return; }   // difference photos are taken by hand
   if (now < st.cooldownUntil) { st.progress = 0; return; }
   // A short wobble only drains the ring a little; losing the vehicle drains it fast.
   // the footboard/cabin shot has no vehicle to lock onto, so it waits longer before firing
@@ -738,7 +911,7 @@ function drawLoop(){
   const stg = $('stage'), W = stg.clientWidth, H = stg.clientHeight, G = guideRect(), a = st.a;
   octx.clearRect(0,0,W,H);
   const ready = !!a?.pass;
-  if (isInterior()) { drawInterior(W, H, ready); requestAnimationFrame(drawLoop); return; }
+  if (isInterior() || st.flow === 'diff') { drawInterior(W, H, ready); requestAnimationFrame(drawLoop); return; }
   // dim everything outside the frame so the frame reads as "put it here"
   octx.save();
   octx.fillStyle = '#00000059';
@@ -838,6 +1011,14 @@ const lightText = l => l === 'green' ? '綠燈・合格' : l === 'yellow' ? '黃
 const lightShort = l => l === 'green' ? '綠燈' : l === 'yellow' ? '黃燈' : '紅燈';
 
 function updateCornerUI(){
+  const diff = st.flow === 'diff';
+  $('strip').hidden = diff;
+  document.querySelector('.auto-note').hidden = diff;
+  document.querySelector('.shutter-lbl').textContent = diff ? '拍攝差異處' : '手動拍攝';
+  if (diff) {
+    $('camSub').textContent = `拍下「${st.baseline.shots[st.diffIdx].corner}」不一樣的地方`;
+    return;
+  }
   const c = CORNERS[st.idx];
   $('camSub').textContent = c.interior ? `請拍攝${c.name}（${st.idx+1} / ${CORNERS.length}）` : `請拍攝車輛四角（${c.name} ${st.idx+1} / ${CORNERS.length}）`;
   $('strip').innerHTML = CORNERS.map((k, i) => {
@@ -851,6 +1032,7 @@ $('manualBtn').addEventListener('click', () => capture('manual'));
 
 async function capture(mode){
   if (st.phase !== 'cam') return;
+  if (st.flow === 'diff') return captureDiff();
   const v = $('video'); if (!v.videoWidth) return;
   const a = st.a || {checks:{}, found:false, bright:0, turn:{need:false}};
   const M = viewMap(), G = guideRect(), interior = isInterior();
@@ -1088,7 +1270,12 @@ $('acceptBtn').addEventListener('click', () => {
   p.light = lightOf(p); p.reasons = reasonsOf(p); p.retakes = st.retakes[st.idx];
   st.shots[st.idx] = p; st.pending = null;
   const next = st.shots.findIndex(s => !s);
-  if (next === -1) { say('全部拍好了，還車完成'); renderDone(); show('done'); return; }
+  if (next === -1) {
+    say('全部拍好了，還車完成');
+    st.baseline = {shots: st.shots.slice(), plate: st.plate, target: st.target, time: st.shots.reduce((m,s) => s.time > m ? s.time : m, st.shots[0].time)};
+    st.pickedAt = null;
+    renderDone(); show('done'); return;
+  }
   st.idx = next;
   say(CORNERS[next].move || ('請拍' + CORNERS[next].name));
   st.spoken = ''; st.spokenAt = performance.now();
@@ -1178,8 +1365,7 @@ function tab(w){
   $('paneR').hidden = w !== 'R'; $('paneB').hidden = w !== 'B';
 }
 $('restartBtn').addEventListener('click', () => {
-  st.shots.forEach(s => { if (s) { URL.revokeObjectURL(s.url); if (s.annotUrl) URL.revokeObjectURL(s.annotUrl); } });
-  tab('R'); resetRun(); show('cam');
+  tab('R'); resetRun(); show('cam');   // photos stay alive: they may be the pickup baseline
 });
 
 /* ---------------- settings ---------------- */
@@ -1207,7 +1393,197 @@ function renderMetrics(a){
 車牌  ${!st.plate ? '未設定' : st.ocrState === 'ready' ? '辨識元件就緒' : st.ocrState === 'loading' ? '辨識元件載入中' : '辨識元件載入失敗'}`;
 }
 
+/* ================= HOME ================= */
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-home]')) goHome();
+});
+function goHome(){
+  try { speechSynthesis.cancel(); } catch(_) {}
+  st.flow = 'return';
+  updateHome();
+  show('home');
+}
+function updateHome(){
+  const b = st.baseline;
+  $('retState').textContent = b ? `已還車 ${fmtClock(b.time)}` : '尚未還車';
+  $('retState').className = 'state' + (b ? ' ready' : '');
+  $('goPickup').disabled = !b;
+  $('pickState').textContent = !b ? '需先完成還車' : st.pickedAt ? '已取車，可再示範一次' : '可取車';
+  $('pickState').className = 'state' + (b ? ' ready' : '');
+}
+$('goReturn').addEventListener('click', () => show('start'));
+$('goPickup').addEventListener('click', () => { if (st.baseline) startPickup(); });
+
+/* ================= PICKUP ================= */
+const DIFF_TYPES = ['刮痕','凹陷','髒污','遺留物','其他'];
+function startPickup(){
+  st.pick = {answers: st.baseline.shots.map(() => null), startedAt: new Date()};
+  renderPickup();
+  show('pickup');
+}
+function renderPickup(){
+  const b = st.baseline, ans = st.pick.answers;
+  $('pickPlate').textContent = `車號：${b.plate || '未設定'}`;
+  $('pickTime').textContent = `標準照：${fmtTime(b.time)}`;
+  $('pickList').innerHTML = b.shots.map((s, i) => {
+    const a = ans[i];
+    const box = a?.status === 'diff' ? `
+      <div class="diffbox"><img src="${a.report.annotUrl || a.report.url}" alt="差異處照片">
+        <div><b>已回報：${esc(a.report.type)}</b><br>取車前回報，不算在您身上（待人員確認）<br>
+        <button type="button" class="redo" data-redo="${i}">重新拍攝</button></div></div>` : '';
+    return `<article class="pcard">
+      <button type="button" class="ph" data-zoom="${i}" aria-label="放大${s.corner}照片"><img src="${s.url}" alt="${s.corner}標準照"><span class="zoom">點擊放大</span></button>
+      <div class="bar"><b>${s.corner}</b>
+        <div class="choice">
+          <button type="button" class="same" data-same="${i}" aria-pressed="${a?.status === 'same'}">相符</button>
+          <button type="button" class="diff" data-diff="${i}" aria-pressed="${a?.status === 'diff'}">不一樣</button>
+        </div>
+      </div>${box}
+    </article>`;
+  }).join('');
+  const done = ans.filter(Boolean).length, n = ans.length;
+  $('pickBar').style.width = (done / n * 100) + '%';
+  $('pickConfirm').disabled = done < n;
+  $('pickHint').textContent = done < n ? `已確認 ${done} / ${n} 項，請逐項按「相符」或「不一樣」` : '確認後的車況，就是本次租用的起點';
+}
+$('pickList').addEventListener('click', e => {
+  const z = e.target.closest('[data-zoom]');
+  if (z) { openLightbox(st.baseline.shots[+z.dataset.zoom].url); return; }
+  const same = e.target.closest('[data-same]');
+  if (same) { st.pick.answers[+same.dataset.same] = {status:'same'}; renderPickup(); return; }
+  const d = e.target.closest('[data-diff],[data-redo]');
+  if (d) startDiff(+(d.dataset.diff ?? d.dataset.redo));
+});
+function startDiff(i){
+  st.flow = 'diff'; st.diffIdx = i; st.litter = [];
+  updateCornerUI();
+  st.progress = 0; st.cooldownUntil = 0;
+  $('platePill').textContent = `回報部位：${st.baseline.shots[i].corner}`;
+  show('cam');
+}
+function openLightbox(url){ const lb = $('lightbox'); lb.querySelector('img').src = url; lb.hidden = false; }
+$('lightbox').addEventListener('click', () => { $('lightbox').hidden = true; });
+
+async function captureDiff(){
+  const v = $('video'); if (!v.videoWidth) return;
+  const M = viewMap(), region = toVideo({x:0, y:0, w:M.cw, h:M.ch}, M);
+  st.phase = 'capturing';
+  $('manualBtn').disabled = true;
+  setInstr('連拍中，請保持不動…', true);
+  let best = null;
+  for (let i = 0; i < S.burstManual; i++) {
+    const c = document.createElement('canvas');
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    const m = measure(c, ...region);
+    if (!best || m.sharp > best.m.sharp) best = {c, m};
+    if (i < S.burstManual - 1) await new Promise(r => setTimeout(r, S.burstGap));
+  }
+  $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go');
+  const blob = await new Promise(r => best.c.toBlob(r, 'image/jpeg', 0.92));
+  let hash = '';
+  try { const buf = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()); hash = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join(''); } catch(_) {}
+  const base = st.baseline.shots[st.diffIdx];
+  const r = {idx: st.diffIdx, corner: base.corner, url: URL.createObjectURL(blob), hash, time: new Date(), type: null, foot: !!base.interior, newItems: []};
+  if (r.foot) {
+    await findItems(r, best.c);
+    // compare item counts with the standard photo
+    const count = list => list.reduce((m, it) => (m[it.label] = (m[it.label] || 0) + 1, m), {});
+    const before = count(base.items || []), after = count(r.items || []);
+    r.newItems = Object.entries(after).filter(([k, n]) => n > (before[k] || 0)).map(([k, n]) => `${k} ${n - (before[k] || 0)} 個`);
+    if (r.newItems.length) r.type = '遺留物';
+  }
+  say('已拍下');
+  st.report = r;
+  openReport();
+}
+function openReport(){
+  const r = st.report;
+  $('rpTitle').textContent = `${r.corner}：與標準照不一樣`;
+  $('rpSub').textContent = '取車前回報・' + fmtClock(r.time);
+  $('rpImg').src = r.annotUrl || r.url;
+  $('rpAi').hidden = !r.foot;
+  if (r.foot) $('rpAiText').textContent = r.newItems.length
+    ? `比標準照多了：${r.newItems.join('、')}。`
+    : '沒有發現比標準照多出的物品，將由人員確認。';
+  renderTypes();
+  show('report');
+}
+function renderTypes(){
+  const r = st.report;
+  $('rpTypes').innerHTML = DIFF_TYPES.map(t => `<button type="button" aria-pressed="${r.type === t}">${t}</button>`).join('');
+  $('rpOk').disabled = !r.type;
+}
+$('rpTypes').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  st.report.type = b.textContent; renderTypes();
+});
+$('rpRetake').addEventListener('click', () => { startDiff(st.report.idx); });
+$('rpOk').addEventListener('click', () => {
+  const r = st.report;
+  st.pick.answers[r.idx] = {status:'diff', report: r};
+  st.flow = 'return'; st.report = null;
+  renderPickup(); show('pickup');
+});
+
+$('pickConfirm').addEventListener('click', () => {
+  st.pickedAt = new Date();
+  renderPickDone();
+  ptab('U');
+  show('pickdone');
+});
+function renderPickDone(){
+  const b = st.baseline, ans = st.pick.answers;
+  const diffs = ans.map((a, i) => a.status === 'diff' ? {...a.report, base: b.shots[i]} : null).filter(Boolean);
+  const same = ans.length - diffs.length;
+  $('ppaneU').innerHTML = `
+  <div class="card receipt">
+    <div class="title">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#d7000f"/><path d="M13 22.5l6 6 12-13" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>已確認取車</b><span>您確認後的車況，就是本次租用的起點</span>
+    </div>
+    <dl class="kv">
+      <dt>車號</dt><dd>${esc(b.plate || '未設定')}</dd>
+      <dt>確認時間</dt><dd>${fmtTime(st.pickedAt)}</dd>
+      <dt>相符</dt><dd>${same} 項</dd>
+      <dt>回報差異</dt><dd>${diffs.length} 項</dd>
+    </dl>
+    ${diffs.map(d => `<div class="diffbox"><img src="${d.annotUrl || d.url}" alt="${d.corner}差異"><div><b>${d.corner}：${esc(d.type)}</b><br>已記錄為取車前既有，不算在您身上（待人員確認）</div></div>`).join('')}
+    <div class="statement">確認取車後才回報的髒污或損傷，將推定為本次租用造成。用車中如有問題，請透過「車況回報」告知。</div>
+  </div>`;
+  $('ppaneB').innerHTML = `
+  <div class="summary">
+    <div><b style="color:var(--ok)">${same}</b><span>相符</span></div>
+    <div><b style="color:var(--red)">${diffs.length}</b><span>回報差異</span></div>
+    <div><b>${ans.length}</b><span>確認項目</span></div>
+  </div>
+  <p class="note">取車用戶在<b>確認取車之前</b>回報的差異。人員比對標準照與回報照片後，判定「確認異常、沒有異常、無法判斷」。</p>
+  ${diffs.length ? diffs.map(d => {
+    const notGreen = d.base.light !== 'green';
+    const resp = notGreen
+      ? `<div class="resp warn">標準照為${d.base.light === 'yellow' ? '黃燈' : '紅燈'}（${esc((d.base.reasons || []).join('、') || '證據力待確認')}）：責任屬前一位或無人租用期間，由人員調查。</div>`
+      : `<div class="resp">標準照為綠燈：若人員確認為新損傷，歸為無人租用期間（前一位還車 → 本次取車之間），由 iRent 吸收。</div>`;
+    return `<article class="card" style="display:grid;gap:10px">
+      <div class="review-head"><h2>${d.corner}：${esc(d.type)}</h2><span class="light wait"><i></i><span>待人員確認</span></span></div>
+      <div class="pair">
+        <figure><img src="${d.base.annotUrl || d.base.url}" alt="標準照"><figcaption>標準照（前一位還車 ${fmtClock(d.base.time)}）</figcaption></figure>
+        <figure><img src="${d.annotUrl || d.url}" alt="回報照片"><figcaption>取車回報（${fmtClock(d.time)}）</figcaption></figure>
+      </div>
+      ${d.foot ? `<div class="note">AI 比對：${d.newItems.length ? '比標準照多了 ' + esc(d.newItems.join('、')) : '未發現多出的物品'}</div>` : ''}
+      ${resp}
+      <dl class="kv" style="font-size:12.5px"><dt>回報時點</dt><dd>確認取車之前 ✓</dd><dt>數位指紋</dt><dd class="mono">${d.hash.slice(0,16)}…</dd></dl>
+    </article>`;
+  }).join('') : '<div class="card note">本次取車沒有回報差異，所有項目皆與標準照相符。</div>'}`;
+}
+function ptab(w){
+  $('ptabU').setAttribute('aria-selected', w === 'U'); $('ptabB').setAttribute('aria-selected', w === 'B');
+  $('ppaneU').hidden = w !== 'U'; $('ppaneB').hidden = w !== 'B';
+}
+$('ptabU').addEventListener('click', () => ptab('U'));
+$('ptabB').addEventListener('click', () => ptab('B'));
+
 updateCornerUI();
+updateHome();
 })();
 </script>
 </body>
