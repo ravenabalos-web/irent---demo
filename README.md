@@ -192,21 +192,6 @@ COCO-SSD 物件偵測（TensorFlow.js，預訓練模型，免訓練）
 
 - 所有辨識都在手機上進行，**照片不會上傳到任何伺服器**，關閉頁面即清除。
 - 本 Repo **不包含**主辦單位提供的任何照片或原始資料；文中的統計數字為彙總結果。
-- 正式版設計（未於 Demo 實作）：只能用 APP 內相機拍攝、以手機安全晶片加上數位簽章、以伺服器時間為準、給其他用戶看的照片會模糊路人臉孔與他車車牌。
+- 正式版設計（未於 Demo 實作）：只能用 APP 內相機拍攝、以手機安全晶片加上數位簽章、以伺服器時間為準。
 
-## 我的角色與 AI 工具使用聲明
-
-本專案為團隊參賽作品的一部分。我負責 **P1（還車照片品質把關）與 P2（取車接力基準）** 的需求分析、資料分析與方案設計，並主導本 Demo 的功能規劃、介面方向與實機測試。
-
-本 Demo 的程式碼由 **AI 程式助理（Claude）協助撰寫**；需求定義、設計決策、版本規劃、實測回饋與迭代方向由我負責。
-
-<!-- 請依實際情況修改：團隊成員、分工、比賽名次等 -->
-
-## 使用的開源專案
-
-| 專案 | 用途 | 授權 |
-|---|---|---|
-| [TensorFlow.js](https://github.com/tensorflow/tfjs) | 在瀏覽器執行機器學習模型 | Apache-2.0 |
-| [COCO-SSD](https://github.com/tensorflow/tfjs-models/tree/master/coco-ssd) | 預訓練物件偵測模型 | Apache-2.0 |
-| [Tesseract.js](https://github.com/naptha/tesseract.js) | 車牌文字辨識（OCR） | Apache-2.0 |
-| [Noto Sans TC（思源黑體）](https://fonts.google.com/noto/specimen/Noto+Sans+TC) | 介面字體 | SIL Open Font License 1.1 |
+本 Demo 的程式碼由 **AI 程式助理（Claude）協助撰寫**；需求定義、設計決策、版本規劃、實測回饋與迭代方向由我方團隊負責。
